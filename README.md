@@ -4,6 +4,10 @@ Tensorflow in javascript, all written from first principles as an exercise to le
 
 All started with me one day writing [some basic NN code](https://github.com/aguaviva/ArtificialIntelligence)... Somehow I ended up writing a lib that generates the same results as tensorflow in the forward and in the backprop passes.
 
+## Online demos
+
+- [MNIST non Conv](https://aguaviva.github.io/myTensorflow/MnistNonConv.html)
+
 ## Features
 
 It supports the following layers:
