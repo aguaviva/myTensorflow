@@ -2,7 +2,7 @@
 
 Tensorflow in javascript, all written from first principles as an exercise to learn NN. 
 
-All started with me one day writing a 2x2 NN and somehow I ended up writing a lib that generates the same results as tensorflow in the forward and in the backprop passes.
+All started with me one day writing [some basic NN code](https://github.com/aguaviva/ArtificialIntelligence)... Somehow I ended up writing a lib that generates the same results as tensorflow in the forward and in the backprop passes.
 
 ## Features
 
