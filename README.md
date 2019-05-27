@@ -6,7 +6,7 @@ All started with me one day writing [some basic NN code](https://github.com/agua
 
 ## Online demos
 
-- [MNIST non Conv]https://aguaviva.github.io/MyTensorflow/MnistNonConv.html
+- [MNIST non Conv](https://aguaviva.github.io/MyTensorflow/MnistNonConv.html)
 
 ## Features
 
