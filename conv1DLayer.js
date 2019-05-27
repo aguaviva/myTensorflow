@@ -53,27 +53,4 @@ class Conv1D
         this.weights = deltas[0].slice(0,3);
         this.bias = deltas[0][3];
     }
-
-    AddWeight(i,val)
-    {
-        if (i<this.weights.length)
-            this.weights[i]+=val
-        else
-            this.bias+=val
-    }
-
-    numericalDerivarive(network, input)
-    {
-        var outA = []
-        var outB = []
-        for(var i=0;i<4;i++)
-        {
-            this.AddWeight(i,.0001)
-            outA.push(ForwardPropagation(network, TransposeMat(input)))
-            this.AddWeight(i,-.0001)
-            outB.push(ForwardPropagation(network, TransposeMat(input)))
-        }
-        var out = MulKMat(1.0/.0001,SubMat(outA, outB));
-        return out;
-    }
 }
