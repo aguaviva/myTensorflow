@@ -159,16 +159,12 @@ function iterate()
         
     iterations++;
 
-    // draw score boards
-    {
-        trainingSetScoreBoard.Draw(inputs, labels, results, 0);
-        testSetScoreBoard.Draw(inputs, labels, results, 2500);
-    }
-
     // train
     { 
         var offset = 0;
         var len = 3000;
+        
+        trainingSetScoreBoard.Draw(inputs, labels, results, offset);
         
         var t0 = performance.now();
         
@@ -187,6 +183,9 @@ function iterate()
     {   
         var offset = 3000; 
         var len = 400;
+        
+        testSetScoreBoard.Draw(inputs, labels, results, offset);
+        
         var res = iterate2(inputs, labels, results, offset, len, false);    
         
         document.getElementById("testText").innerHTML = "Num items: " + len + "<br>Correct: " + res.correct + " ("+ (res.correct*100/len).toFixed(2) +"% )<br>Error: " + res.totalErr + " <br> ";        
@@ -200,7 +199,6 @@ function init()
     trainingSetScoreBoard = new ScoreBoard("trainingSetScoreBoard");
     testSetScoreBoard = new ScoreBoard("testSetScoreBoard");
     graph = new Graph("myCanvas");
-    
 
     var weights1 = [[RandomMat(15,784)]];  //read from 3, ilayer is 4, the +1 is because of the bias
     var bias1 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
