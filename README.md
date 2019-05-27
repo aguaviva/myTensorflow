@@ -1,4 +1,4 @@
-# ArtificialIntelligence
+# myTensorflow
 
 Tensorflow in javascript, all written from first principles as an exercise to learn NN. 
 
