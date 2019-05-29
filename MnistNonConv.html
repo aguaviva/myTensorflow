@@ -96,7 +96,7 @@ var trainingSetScoreBoard = null;
 var graph = null;
 
 var iterations = 0;
-var learningRate = 1;
+var learningRate = 3;
 
 function vectorFromIdx(i)
 {
@@ -121,32 +121,44 @@ function getMaxIdxInVector(vv)
     return idx;
 }
 
-function iterate2(inputs, labels, results, offset, size, training)
+function iterate2(inputs, labels, results, offset, size, batcheSize, training)
 {   
+    assert((size % batches) == 0);
+    
     var totalErr = 0;
     var correct = 0;
 
-    for(var j=offset;j<offset+ size;j++)
-    {
-        network[network.length-1].setValue(vectorFromIdx(labels[j]));
-        
-        var err = ForwardPropagation(network, [[[inputs[j]]]])[0][0][0][0];
-        
-        if (err < 0.1)
-            correct++;        
-                
-        // store result from the network        
-        var outputLayer = network[network.length-2];                
-        res = outputLayer.forwardPass(outputLayer.input);
-        results[j] = getMaxIdxInVector(res)
+    for(var i=offset;i<(offset+size);i+=batcheSize)
+    {    
+        for(var j=i;j<(i+batcheSize);j++)
+        {
+            network[network.length-1].setValue(vectorFromIdx(labels[j]));
+            
+            var err = ForwardPropagation(network, [[[inputs[j]]]])[0][0][0][0];
+            totalErr += err * err;
+                    
+            // store result from the network        
+            var outputLayer = network[network.length-2];                
+            var output = outputLayer.forwardPass(outputLayer.input);
+            var index = getMaxIdxInVector(output)
+            
+            if (index == labels[j])
+                correct++;        
+            
+            results[j] = index;
+            
+            if (training)
+            {
+                BackwardPropagation(network);        
+            }
+            
+        }            
         
         if (training)
         {
-            BackwardPropagation(network);        
-            ApplyDeltas(network, learningRate);    
+            ApplyDeltas(network, learningRate/batcheSize);    
         }
         
-        totalErr += err * err;
     }    
     
     return {correct: correct, totalErr: totalErr / size};
@@ -168,15 +180,15 @@ function iterate()
         
         var t0 = performance.now();
         
-        var res = iterate2(inputs, labels, results, offset, len, true);
+        var res = iterate2(inputs, labels, results, offset, len, 100, true);
 
         var t1 = performance.now();
         var milliseconds = (t1 - t0);
         
         graph.AddPoint(res.totalErr * 100);
 
-        document.getElementById("trainingText").innerHTML = "Epocs:" + iterations + " <br> Epocs/sec: " + ((len * 1000) / milliseconds).toFixed(1) + "<br>"
-        document.getElementById("trainingText").innerHTML += "Num items: " + len + "<br>Correct: " + res.correct + " ("+ (res.correct*100/len).toFixed(2) +"% )<br>Error: " + res.totalErr + " <br> ";
+        document.getElementById("trainingText").innerHTML = "Epocs:" + iterations + " Epocs/sec: " + ((len * 1000) / milliseconds).toFixed(1) + "<br>"
+        document.getElementById("trainingText").innerHTML += "Num items: " + len + " Correct: " + res.correct + " ("+ (res.correct*100/len).toFixed(2) +"% ) Error: " + res.totalErr + " <br> ";
     }
         
     // test    
@@ -186,9 +198,9 @@ function iterate()
         
         testSetScoreBoard.Draw(inputs, labels, results, offset);
         
-        var res = iterate2(inputs, labels, results, offset, len, false);    
+        var res = iterate2(inputs, labels, results, offset, len, 100, false);    
         
-        document.getElementById("testText").innerHTML = "Num items: " + len + "<br>Correct: " + res.correct + " ("+ (res.correct*100/len).toFixed(2) +"% )<br>Error: " + res.totalErr + " <br> ";        
+        document.getElementById("testText").innerHTML = "Num items: " + len + " Correct: " + res.correct + " ("+ (res.correct*100/len).toFixed(2) +"% ) Error: " + res.totalErr + " <br> ";        
     }
 }
 
@@ -200,11 +212,11 @@ function init()
     testSetScoreBoard = new ScoreBoard("testSetScoreBoard");
     graph = new Graph("myCanvas");
 
-    var weights1 = [[RandomMat(15,784)]];  //read from 3, ilayer is 4, the +1 is because of the bias
-    var bias1 = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+    var weights1 = [[RandomMat(784, 15)]];  //read from 3, ilayer is 4, the +1 is because of the bias
+    var bias1 = RandomVec(15);
     
-    var weights2 = [[RandomMat(10, 15)]];
-    var bias2 = [0,0,0,0,0,0,0,0,0,0];
+    var weights2 = [[RandomMat(15, 10)]];
+    var bias2 = RandomVec(10);
         
     network.push(new InputLayer());
     network.push(new FullyConnectedLayer(weights1, bias1));
@@ -221,7 +233,7 @@ function init()
 
 
 <body onload="init()">
-<h1>Mnist 784x15</h1>
+<h1>MNIST 784x15x10</h1>
 <div id="container">
 	
 <canvas id="myCanvas" width="600" height="100"></canvas>

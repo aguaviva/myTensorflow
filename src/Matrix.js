@@ -1,3 +1,7 @@
+// 1749 baseline
+// 2027 with new MatZero-loop in mulmat
+// 2215 with new MatZero-fill in mulmat
+
 function assert(condition, message) 
 {
     if (!condition) 
@@ -11,7 +15,15 @@ function assert(condition, message)
     }
 }
 
-function RandomMat(inp,neurons)
+function RandomVec(neurons)
+{
+    var L = []
+    for(var i=0;i<neurons;i++)
+        L[i]= 2*Math.random()-1;
+    return L
+}
+
+function RandomMat(neurons, inp)
 {
     var L = []
     for(var i=0;i<neurons;i++)
@@ -96,20 +108,36 @@ function PrintMat(prefix, mm)
     return str;
 }
 
+function GetZeroedVector(n)
+{
+    var O = [];
+    
+    for(var j=0;j<n;j++)
+        O[j] = 0;
+        
+    return O;
+}
+
 function MatZero(dimY, dimX)
 {
-    var out = [];
-
+    var O = []   
     for(var y=0;y<dimY;y++)
     {
-        out[y] = []
+        O[y] = []
         for(var x=0;x<dimX;x++)
         {                                       
-            out[y][x] = 0;
+            O[y][x] = 0;
         }
-    }            
-    return out;
+    }               
+
+    return O;
  }
+
+function MatZero2(dimY, dimX)
+{
+    return Array(dimY).fill(Array(dimX).fill(0));
+}
+
 
 function TensorZero(dimZ, dimW, dimY, dimX)
 {
@@ -135,8 +163,6 @@ function TensorZero(dimZ, dimW, dimY, dimX)
     return out;                
 }
 
-
-
 function RectangularMat(dimX, dimY)
 {
     var O = [];
@@ -161,10 +187,10 @@ function MulMat(m1, m2)
 {
     assert(m1[0].length == m2.length);
 
-    var O = [];
+    var O = MatZero(m1.length, m2[0].length);
+
     for(var j=0;j<m1.length;j++)
     {
-        O[j]=[];
         for(var i=0;i<m2[0].length;i++)
         {
             var tmp=0;
@@ -174,7 +200,7 @@ function MulMat(m1, m2)
                 
                 tmp += v;
             }
-            O[j].push( tmp);
+            O[j][i] = tmp;
         }
     }
     return O;
@@ -201,13 +227,12 @@ function CheckMat(m, msg)
 
 function TransposeMat(m)
 {
-    var O = [];
-    for(var j=0;j<m[0].length;j++)
+    var O = MatZero(m[0].length, m.length);
+    for(var j=0;j<m.length;j++)
     {
-        O[j]=[];
-        for(var i=0;i<m.length;i++)
+        for(var i=0;i<m[0].length;i++)
         {
-            O[j][i] = m[i][j];
+            O[i][j] = m[j][i];
         }
     }
     return O;
@@ -216,43 +241,25 @@ function TransposeMat(m)
 function AddMat(m1, m2)
 {
     assert(m1.length == m2.length);
-    assert(m1[0].length == m2[0].length);
+    assert(m1[0].length == m1[0].length);
 
-    var O = [];
+    var O = MatZero(m1.length, m1[0].length);
     for(var j=0;j<m1.length;j++)
     {
-        O[j]=[];
         for(var i=0;i<m1[0].length;i++)
         {
             O[j][i] = m1[j][i] + m2[j][i];
         }
     }
-    return O;
-}
-
-function SimpleMulMat(m1, m2)
-{
-    assert(m1.length == m2.length);
-    assert(m1[0].length == m2[0].length);
-
-    var O = [];
-    for(var j=0;j<m1.length;j++)
-    {
-        O[j]=[];
-        for(var i=0;i<m1[0].length;i++)
-        {
-            O[j][i] = m1[j][i] * m2[j][i];
-        }
-    }
+    
     return O;
 }
 
 function MulKMat(k, m)
 {
-    var O = [];
+    var O = MatZero(m.length, m[0].length);
     for(var j=0;j<m.length;j++)
     {
-        O[j]=[];
         for(var i=0;i<m[0].length;i++)
         {
             O[j][i] = m[j][i] * k;
@@ -266,10 +273,9 @@ function SubMat(m1, m2)
     assert(m1.length == m2.length);
     assert(m1[0].length == m2[0].length);
 
-    var O = [];
+    var O = MatZero(m1.length, m1[0].length);
     for(var j=0;j<m1.length;j++)
     {
-        O[j]=[];
         for(var i=0;i<m1[0].length;i++)
         {
             O[j][i] = m1[j][i] - m2[j][i];
@@ -303,27 +309,4 @@ function ConvertMat(m, x,y)
     return O;
 }
 
-function funcMat(func, m )
-{
-    var O = [];
-    for(var j=0;j<m.length;j++)
-    {
-        O[j]=[];
-        for(var i=0;i<m[0].length;i++)
-        {
-            O[j][i] = func(m[j][i]);
-        }
-    }
-    return O;
-}
 
-
-function GetZeroedVector(n)
-{
-    var O = [];
-    
-    for(var j=0;j<n;j++)
-        O[j] = 0;
-        
-    return O;
-}
