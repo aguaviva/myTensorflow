@@ -121,16 +121,16 @@ function getMaxIdxInVector(vv)
     return idx;
 }
 
-function iterate2(inputs, labels, results, offset, size, batcheSize, training)
+function iterate2(inputs, labels, results, offset, size, batchSize, training)
 {   
-    assert((size % batches) == 0);
+    assert((size % batchSize) == 0);
     
     var totalErr = 0;
     var correct = 0;
 
-    for(var i=offset;i<(offset+size);i+=batcheSize)
+    for(var i=offset;i<(offset+size);i+=batchSize)
     {    
-        for(var j=i;j<(i+batcheSize);j++)
+        for(var j=i;j<(i+batchSize);j++)
         {
             network[network.length-1].setValue(vectorFromIdx(labels[j]));
             
@@ -150,15 +150,13 @@ function iterate2(inputs, labels, results, offset, size, batcheSize, training)
             if (training)
             {
                 BackwardPropagation(network);        
-            }
-            
+            }            
         }            
         
         if (training)
         {
-            ApplyDeltas(network, learningRate/batcheSize);    
-        }
-        
+            ApplyDeltas(network, learningRate/batchSize);    
+        }        
     }    
     
     return {correct: correct, totalErr: totalErr / size};
