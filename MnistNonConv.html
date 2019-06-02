@@ -25,6 +25,7 @@ h1 { display:block; width:600px; margin:20px auto; paddVing-bottom:20px; font:no
 <script type="text/javascript" src="src/Conv3DLayer.js"></script>
 <script type="text/javascript" src="src/CostQuadraticLayer.js"></script>
 <script type="text/javascript" src="src/CostCrossEntropyLayer.js"></script>
+<script type="text/javascript" src="src/CostArgMaxCrossEntropyLayer.js"></script>
 <script type="text/javascript" src="src/FlattenLayer.js"></script>
 <script type="text/javascript" src="src/FullyConnectedLayer.js"></script>
 <script type="text/javascript" src="src/InputLayer.js"></script>
@@ -85,9 +86,9 @@ class Graph
 }
 
 //-------------------------------
+var mnist;
 
 var network = []
-var inputs = [];
 var outputs = [];
 
 var results = Array(labels.length).fill(-1);
@@ -108,17 +109,7 @@ function vectorFromIdx(i)
 function getMaxIdxInVector(vv)
 {
     var v = vv[0][0][0]
-    var max = -Infinity;
-    var idx = -1;
-    for(var j=0;j<v.length;j++)
-    {
-        if (v[j]>max)
-        {
-            max = v[j];
-            idx = j;
-        }
-    }
-    return idx;
+    return v.indexOf(Math.max.apply(null, v));
 }
 
 function iterate2(inputs, labels, results, offset, size, batchSize, training)
@@ -132,21 +123,19 @@ function iterate2(inputs, labels, results, offset, size, batchSize, training)
     {    
         for(var j=i;j<(i+batchSize);j++)
         {
-            network[network.length-1].setValue(vectorFromIdx(labels[j]));
+            network[network.length-1].setValue(labels[j]);
             
-            var err = ForwardPropagation(network, [[[inputs[j]]]])[0][0][0][0];
-            totalErr += err * err;
+            totalErr += ForwardPropagation(network, [[[inputs[j]]]])[0][0][0][0];
                     
-            // store result from the network        
-            var outputLayer = network[network.length-2];                
-            var output = outputLayer.forwardPass(outputLayer.input);
-            var index = getMaxIdxInVector(output)
-            
-            if (index == labels[j])
-                correct++;        
+            // get prediction        
+            var output = network[network.length-2].input;                
+            var index = getMaxIdxInVector(output)            
             
             results[j] = index;
             
+            if (index == labels[j])
+                correct++;        
+                                    
             if (training)
             {
                 BackwardPropagation(network);        
@@ -164,7 +153,7 @@ function iterate2(inputs, labels, results, offset, size, batchSize, training)
 
 function iterate()
 {
-    if (inputs[0]==undefined)
+    if (mnist.inputs.length != 6000)
         return;
         
     iterations++;
@@ -174,16 +163,16 @@ function iterate()
         var offset = 0;
         var len = 3000;
         
-        trainingSetScoreBoard.Draw(inputs, labels, results, offset);
+        trainingSetScoreBoard.Draw(mnist.inputs, mnist.labels, results, offset);
         
         var t0 = performance.now();
         
-        var res = iterate2(inputs, labels, results, offset, len, 100, true);
+        var res = iterate2(mnist.inputs, mnist.labels, results, offset, len, 100, true);
 
         var t1 = performance.now();
         var milliseconds = (t1 - t0);
         
-        graph.AddPoint(res.totalErr * 100);
+        graph.AddPoint(res.totalErr * 30);
 
         document.getElementById("trainingText").innerHTML = "Epocs:" + iterations + " Epocs/sec: " + ((len * 1000) / milliseconds).toFixed(1) + "<br>"
         document.getElementById("trainingText").innerHTML += "Num items: " + len + " Correct: " + res.correct + " ("+ (res.correct*100/len).toFixed(2) +"% ) Error: " + res.totalErr + " <br> ";
@@ -194,9 +183,9 @@ function iterate()
         var offset = 3000; 
         var len = 400;
         
-        testSetScoreBoard.Draw(inputs, labels, results, offset);
+        testSetScoreBoard.Draw(mnist.inputs, mnist.labels, results, offset);
         
-        var res = iterate2(inputs, labels, results, offset, len, 100, false);    
+        var res = iterate2(mnist.inputs, mnist.labels, results, offset, len, 100, false);    
         
         document.getElementById("testText").innerHTML = "Num items: " + len + " Correct: " + res.correct + " ("+ (res.correct*100/len).toFixed(2) +"% ) Error: " + res.totalErr + " <br> ";        
     }
@@ -204,7 +193,7 @@ function iterate()
 
 function init()
 {   
-    GetMnistInputs(inputs);
+    mnist = GetMnistInputs();
     
     trainingSetScoreBoard = new ScoreBoard("trainingSetScoreBoard");
     testSetScoreBoard = new ScoreBoard("testSetScoreBoard");
@@ -221,9 +210,8 @@ function init()
     network.push(new ActivationSigmoidLayer());
     network.push(new FullyConnectedLayer(weights2, bias2));
     network.push(new ActivationSigmoidLayer());
-    //network.push(new ArgMaxLayer());   
-    //network.push(new CostCrossEntropyLayer());
-    network.push(new CostQuadraticLayer());
+    //network.push(new CostQuadraticLayer());
+    network.push(new CostArgMaxCrossEntropyLayer());
     
     setInterval(iterate,10); 
 }

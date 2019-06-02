@@ -133,11 +133,6 @@ function MatZero(dimY, dimX)
     return O;
  }
 
-function MatZero2(dimY, dimX)
-{
-    return Array(dimY).fill(Array(dimX).fill(0));
-}
-
 
 function TensorZero(dimZ, dimW, dimY, dimX)
 {
@@ -193,14 +188,10 @@ function MulMat(m1, m2)
     {
         for(var i=0;i<m2[0].length;i++)
         {
-            var tmp=0;
             for(var k=0;k<m1[0].length;k++)
             {                
-                var v = (m1[j][k] * m2[k][i]);
-                
-                tmp += v;
+                O[j][i] += (m1[j][k] * m2[k][i]);
             }
-            O[j][i] = tmp;
         }
     }
     return O;

@@ -30,7 +30,7 @@ function LoadImage(file, list)
             var num = []
             for (var x=0;x<784;x++)
             {
-                num[x] = imagedata[(x + y*784)*4]/255.0;
+                num[x] = (imagedata[(x + y*784)*4]/255.0)-0.5;
             }
             list.push(num);
         }
@@ -39,12 +39,16 @@ function LoadImage(file, list)
 }
 
 
-function GetMnistInputs(numbers)
+function GetMnistInputs()
 {
+    var out = { inputs: [], labels: labels };
+ 
     for(var i=0;i<2;i++)
     {
-        LoadImage("mnist//mnist_batch_"+i+".png", numbers);
+        LoadImage("mnist//mnist_batch_"+i+".png", out.inputs);
     }       
+        
+    return out;
 }
 
 // ScoreBoard renderer
