@@ -78,14 +78,18 @@ class ScoreBoard
         this.ctx.putImageData(this.canvasData, 0, 0);    
     }
     
-    DrawNumbers(input, dx, dy)
+    DrawNumbers(input, dx, dy, dataIsTensor)
     {
         for (var y=0;y<28;y++)
         {
             for (var x=0;x<28;x++)
             {
                 var p = ((dx+x) + (dy+y) * this.cvs.width)*4;
-                var b = input[x + y*28]*255;
+                var b;
+                if (dataIsTensor)
+                    b = input[x][y]*255;                    
+                else
+                    b = input[x + y*28]*255;
                 this.canvasData.data[ p + 0 ] = b
                 this.canvasData.data[ p + 1 ] = b;
                 this.canvasData.data[ p + 2 ] = b;
@@ -101,22 +105,24 @@ class ScoreBoard
         this.ctx.fillText(text, x, y);        
     }   
     
-    Draw(numbers, labels, results, offset)
+    Draw(input, labels, results, offset)
     {
         this.clear();
 
+        var count = Math.min(input.length, 15*8);
+
         this.BeginDrawNumbers();
-        for (var i=0;i<15*8;i++)
+        for (var i=0;i<count;i++)
         {
             var x = (i % 15)*40;
             var y = (Math.floor(i / 15))*40;
-            this.DrawNumbers(numbers[offset + i], x, y)
+            this.DrawNumbers(input[offset + i], x, y)
         }
         this.EndDrawNumbers()
 
         this.ctx.beginPath();
         this.ctx.strokeStyle = "red";
-        for (var i=0;i<15*8;i++)
+        for (var i=0;i<count;i++)
         {
             if (labels[offset+i] != results[offset+i])
             {                
@@ -128,7 +134,7 @@ class ScoreBoard
         }
         this.ctx.stroke();
 
-        for (var i=0;i<15*8;i++)
+        for (var i=0;i<count;i++)
         {
             var x = (i % 15)*40;
             var y = (Math.floor(i / 15))*40;
