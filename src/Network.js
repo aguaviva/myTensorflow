@@ -102,7 +102,7 @@ function PrintTensor(t)
         }
         else if (dims == 2)
         {
-            out += PrintMat(t);            
+            out += PrintMat("",t);            
         }
         else if (dims == 1)
         {
