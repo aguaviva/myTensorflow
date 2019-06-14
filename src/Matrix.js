@@ -37,6 +37,30 @@ function RandomMat(neurons, inp)
     return L;
 }
 
+function TensorRandom(dimZ, dimW, dimY, dimX)
+{
+    var out = [];
+    for(var z=0;z<dimZ;z++)
+    {        
+        out[z] = []
+        for(var w=0;w<dimW;w++)
+        {        
+            out[z][w] = []
+            
+            for(var y=0;y<dimY;y++)
+            {
+                out[z][w][y] = []
+                for(var x=0;x<dimX;x++)
+                {                                       
+                    out[z][w][y][x] = 2*Math.random()-1;
+                }
+            }                        
+        }
+    }
+    
+    return out;                
+}
+
 function GetDimensions(m)
 {
     var o = []
