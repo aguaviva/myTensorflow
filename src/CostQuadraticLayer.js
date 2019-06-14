@@ -19,6 +19,8 @@ class CostQuadraticLayer
         
         var err = 0;
         
+        this.input = input;
+        
         this.diff = TensorZero(input.length, input[0].length, input[0][0].length, input[0][0][0].length);        
        
         for(var l=0;l<input.length;l++)
