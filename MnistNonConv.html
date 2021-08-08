@@ -86,12 +86,13 @@ class Graph
 }
 
 //-------------------------------
-var mnist;
+var mnist = null;
 
 var network = []
 var outputs = [];
 
-var results = Array(labels.length).fill(-1);
+var results_training;
+var results_validation;
 
 var trainingSetScoreBoard = null;
 var graph = null;
@@ -153,39 +154,36 @@ function iterate2(inputs, labels, results, offset, size, batchSize, training)
 
 function iterate()
 {
-    if (mnist.inputs.length != 6000)
-        return;
-        
     iterations++;
 
     // train
     { 
         var offset = 0;
-        var len = 3000;
-        
-        trainingSetScoreBoard.Draw(mnist.inputs, mnist.labels, results, offset);
+        var len = mnist.training_images.length;
+        var batch = 100;
+        trainingSetScoreBoard.Draw(mnist.training_images, mnist.training_labels, results_validation, offset);
         
         var t0 = performance.now();
         
-        var res = iterate2(mnist.inputs, mnist.labels, results, offset, len, 100, true);
+        var res = iterate2(mnist.training_images, mnist.training_labels, results_validation, offset, len, batch, true);
 
         var t1 = performance.now();
         var milliseconds = (t1 - t0);
         
         graph.AddPoint(res.totalErr * 30);
 
-        document.getElementById("trainingText").innerHTML = "Epocs:" + iterations + " Epocs/sec: " + ((len * 1000) / milliseconds).toFixed(1) + "<br>"
+        document.getElementById("trainingText").innerHTML = "Epocs:" + iterations + " Epocs/sec: " + ((len * batch) / milliseconds).toFixed(1) + "<br>"
         document.getElementById("trainingText").innerHTML += "Num items: " + len + " Correct: " + res.correct + " ("+ (res.correct*100/len).toFixed(2) +"% ) Error: " + res.totalErr + " <br> ";
     }
         
     // test    
     {   
-        var offset = 3000; 
+        var offset = 0; 
         var len = 400;
         
-        testSetScoreBoard.Draw(mnist.inputs, mnist.labels, results, offset);
+        testSetScoreBoard.Draw(mnist.validation_images, mnist.validation_labels, results_training, offset);
         
-        var res = iterate2(mnist.inputs, mnist.labels, results, offset, len, 100, false);    
+        var res = iterate2(mnist.validation_images, mnist.validation_labels, results_training, offset, len, batch, false);    
         
         document.getElementById("testText").innerHTML = "Num items: " + len + " Correct: " + res.correct + " ("+ (res.correct*100/len).toFixed(2) +"% ) Error: " + res.totalErr + " <br> ";        
     }
@@ -193,27 +191,40 @@ function iterate()
 
 function init()
 {   
-    mnist = GetMnistInputs();
-    
-    trainingSetScoreBoard = new ScoreBoard("trainingSetScoreBoard");
-    testSetScoreBoard = new ScoreBoard("testSetScoreBoard");
-    graph = new Graph("myCanvas");
+    GetMnistInputs().then(function(data)
+	{    
+		mnist=[]
+		// choose validation set
+		mnist.validation_images = data.inputs.slice(3000,6000)
+		mnist.validation_labels = data.labels.slice(3000,6000)	
+		results_validation = Array(mnist.validation_labels).fill(-1);
+		
+		// choose training set
+		mnist.training_images = data.inputs.slice(0,3000)
+		mnist.training_labels = data.labels.slice(0,3000)	
+		results_training = Array(mnist.training_labels.length).fill(-1);
 
-    var weights1 = [[RandomMat(784, 15)]];  //read from 3, ilayer is 4, the +1 is because of the bias
-    var bias1 = RandomVec(15);
-    
-    var weights2 = [[RandomMat(15, 10)]];
-    var bias2 = RandomVec(10);
-        
-    network.push(new InputLayer());
-    network.push(new FullyConnectedLayer(weights1, bias1));
-    network.push(new ActivationSigmoidLayer());
-    network.push(new FullyConnectedLayer(weights2, bias2));
-    network.push(new ActivationSigmoidLayer());
-    //network.push(new CostQuadraticLayer());
-    network.push(new CostArgMaxCrossEntropyLayer());
-    
-    setInterval(iterate,10); 
+	
+		trainingSetScoreBoard = new ScoreBoard("trainingSetScoreBoard");
+		testSetScoreBoard = new ScoreBoard("testSetScoreBoard");
+		graph = new Graph("myCanvas");
+
+		var weights1 = [[RandomMat(784, 15)]];  //read from 3, ilayer is 4, the +1 is because of the bias
+		var bias1 = RandomVec(15);
+		
+		var weights2 = [[RandomMat(15, 10)]];
+		var bias2 = RandomVec(10);
+			
+		network.push(new InputLayer());
+		network.push(new FullyConnectedLayer(weights1, bias1));
+		network.push(new ActivationSigmoidLayer());
+		network.push(new FullyConnectedLayer(weights2, bias2));
+		network.push(new ActivationSigmoidLayer());
+		//network.push(new CostQuadraticLayer());
+		network.push(new CostArgMaxCrossEntropyLayer());
+		
+		setInterval(iterate,10); 
+	});
 }
 </script>
 
@@ -234,7 +245,7 @@ function init()
 
 <h2>Intro</h2>
 
-<p>Finally using mnist.</p>
+<p>Finally using MNIST.</p>
 <p>Using the typical 784x15x10 architecture.  </p>
 <p>The numbers are an image 28x28, the data is arranged in array of 28x28=784 and encoded in a png file. </p>
 <p>Credits for the png files (and the inspiration and lectures :) ) go to <a href="http://karpathy.github.io/">Andrej Karpathy</a></p>

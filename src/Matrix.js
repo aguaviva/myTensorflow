@@ -212,10 +212,12 @@ function MulMat(m1, m2)
     {
         for(var i=0;i<m2[0].length;i++)
         {
+			var sum = 0;
             for(var k=0;k<m1[0].length;k++)
             {                
-                O[j][i] += (m1[j][k] * m2[k][i]);
+                sum += (m1[j][k] * m2[k][i]);
             }
+			O[j][i] = sum;
         }
     }
     return O;

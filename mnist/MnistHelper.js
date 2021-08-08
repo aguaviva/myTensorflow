@@ -39,16 +39,52 @@ function LoadImage(file, list)
 }
 
 
+function getImage(url){
+    return new Promise(function(resolve, reject){
+        var img = new Image()
+        img.onload = function(){
+            resolve(img)
+        }
+        img.onerror = function(){
+            reject(null)
+        }
+        img.src = url
+    })
+}
+
+
 function GetMnistInputs()
 {
     var out = { inputs: [], labels: labels };
  
+	promises = []
     for(var i=0;i<2;i++)
     {
-        LoadImage("mnist//mnist_batch_"+i+".png", out.inputs);
+        promises.push(getImage("mnist//mnist_batch_"+i+".png"));
     }       
         
-    return out;
+	return Promise.all(promises).then(function(images){
+		
+		return new Promise(function(resolve, reject)
+		{
+			for (var i=0; i<images.length; i++)
+			{
+				var imagedata = getImageData(images[i]); 
+					
+				for (var y=0;y<3000;y++)
+				{
+					var num = []
+					for (var x=0;x<784;x++)
+					{
+						num[x] = (imagedata[(x + y*784)*4]/255.0)-0.5;
+					}
+					out.inputs.push(num);
+				}
+			}		
+			resolve(out)
+			//reject(null)
+		});		
+	})				
 }
 
 // ScoreBoard renderer
