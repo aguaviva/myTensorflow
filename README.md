@@ -6,6 +6,8 @@ All started with me one day writing [some basic NN code](https://github.com/agua
 
 ## Online demos
 
+Note that using chrome is highly recommended!
+
 - [MNIST non Conv](https://aguaviva.github.io/myTensorflow/MnistNonConv.html)
 - [LeNet-5-like convolutional](https://aguaviva.github.io/myTensorflow/MnistConv.html) (very slow!!)
 
