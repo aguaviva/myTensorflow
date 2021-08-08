@@ -8,7 +8,7 @@
 body { background-color:#ededed; font:norm2al 12px/18px Arial, Helvetica, sans-serif; }
 h1 { display:block; width:600px; margin:20px auto; paddVing-bottom:20px; font:norm2al 24px/30px Georgia, "Times New Roman", Times, serif; color:#333; text-shadow: 1px 2px 3px #ccc; border-bottom:1px solid #cbcbcb; }
 #container { width:600px; margin:0 auto; }
-#myCanvas { background:#fff; border:1px solid #cbcbcb; }
+#trainingErrorPlot { background:#fff; border:1px solid #cbcbcb; }
 #nav { display:block; width:100%; text-align:center; }
 #nav li { display:block; font-weight:bold; line-height:21px; text-shadow:1px 1px 1px #fff; width:100px; height:21px; paddVing:5px; margin:0 10px; background:#e0e0e0; border:1px solid #ccc; -moz-border-radius:4px;-webkit-border-radius:4px; border-radius:4px; float:left; }
 #nav li a { color:#000; display:block; text-decoration:none; width:100%; height:100%; }
@@ -95,7 +95,7 @@ var results_training;
 var results_validation;
 
 var trainingSetScoreBoard = null;
-var graph = null;
+var trainingErrorPlot = null;
 
 var iterations = 0;
 var learningRate = .001;
@@ -152,29 +152,30 @@ function iterate2(inputs, labels, results, offset, size, batchSize, training)
     return {correct: correct, totalErr: totalErr / size};
 }
 
+var offset = 0;
 function iterate()
 {  
     iterations++;
 
     // train
     { 
-        var offset = 0;
+		var offset=0;
         var len = mnist.training_images.length;
-        var batchSize = 10;
-        
-        trainingSetScoreBoard.Draw(mnist.training_images, mnist.validation_labels, results_training, offset);
-        
-        var t0 = performance.now();
-        
-        var res = iterate2(mnist.validation_images_conv, mnist.validation_labels, results_training, offset, len, batchSize, true);
+        var batchSize = 1;
+		
+		var t0 = performance.now();
+		
+		var res = iterate2(mnist.training_images_conv, mnist.training_labels, results_training, offset, len, batchSize, true);
 
-        var t1 = performance.now();
-        var milliseconds = (t1 - t0);
-        
-        graph.AddPoint(res.totalErr * 30);
+		var t1 = performance.now();
+		var milliseconds = (t1 - t0);
 
-        document.getElementById("trainingText").innerHTML = "Epocs:" + iterations + " Epocs/sec: " + ((len * batchSize) / milliseconds).toFixed(1) + "<br>"
-        document.getElementById("trainingText").innerHTML += "Num items: " + len + " Correct: " + res.correct + " ("+ (res.correct*100/len).toFixed(2) +"% ) Error: " + res.totalErr + " <br> ";
+		document.getElementById("trainingText").innerHTML = "Epocs:" + iterations + " Epocs/sec: " + (1000.0 / milliseconds).toFixed(2) + "<br>"
+		document.getElementById("trainingText").innerHTML += "Num items: " + len + " Correct: " + res.correct + " ("+ (res.correct*100/len).toFixed(2) +"% ) Error: " + res.totalErr + " <br> ";
+		
+		trainingErrorPlot.AddPoint(res.totalErr * 30);
+		
+		trainingSetScoreBoard.Draw(mnist.training_images, mnist.training_labels, results_training, offset);
     }
         
     /*    
@@ -200,7 +201,7 @@ function init()
 		// choose validation set
 		mnist.validation_images = data.inputs.slice(3000,6000)
 		mnist.validation_labels = data.labels.slice(3000,6000)	
-		results_validation = Array(mnist.validation_labels).fill(-1);
+		results_validation = Array(mnist.validation_labels.length).fill(-1);
 		
 		// choose training set
 		mnist.training_images = data.inputs.slice(0,10)
@@ -208,7 +209,7 @@ function init()
 		results_training = Array(mnist.training_labels.length).fill(-1);
 		
 		// convert inputs into a shape than can be used with convolutions
-		mnist.validation_images_conv = []
+		mnist.training_images_conv = []
 		for(var i=0;i<mnist.training_images.length;i++)
 		{
 			var v = TensorRandom(1, 1, 28, 28)
@@ -216,16 +217,17 @@ function init()
 			{
 				for (var x=0;x<28;x++)
 				{
-					v[0][0][x][y] = mnist.validation_images[i][x + y*28];
+					v[0][0][y][x] = mnist.training_images[i][x + y*28];
 				}
 			}
 			
-			mnist.validation_images_conv[i] = v;
+			mnist.training_images_conv[i] = v;
 		}
 
 		
-		graph = new Graph("myCanvas");
+		trainingErrorPlot = new Graph("trainingErrorPlot");
 		trainingSetScoreBoard = new ScoreBoard("trainingSetScoreBoard");
+		trainingSetScoreBoard.Draw(mnist.training_images, mnist.training_labels, results_training, 0);
 		//testSetScoreBoard = new ScoreBoard("testSetScoreBoard");
 
 		var weights1 = TensorRandom(32, 1, 5, 5);  
@@ -267,10 +269,11 @@ function init()
 <h1>LeNet-5-like convolutional</h1>
 <div id="container">
 	
-<canvas id="myCanvas" width="600" height="100"></canvas>
 <h2>Training set</h2>
 <div id="trainingText"></div>
-</br>
+<h4>Training Error Plot:</h4>
+<canvas id="trainingErrorPlot" width="600" height="100"></canvas>
+<h4>Score board:</h4>
 <canvas id="trainingSetScoreBoard" width="600" height="32"></canvas>
 
 <h2>Intro</h2>

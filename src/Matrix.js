@@ -147,11 +147,12 @@ function MatZero(dimY, dimX)
     var O = []   
     for(var y=0;y<dimY;y++)
     {
+		
         O[y] = []
         for(var x=0;x<dimX;x++)
         {                                       
             O[y][x] = 0;
-        }
+        }	
     }               
 
     return O;
@@ -207,7 +208,7 @@ function MulMat(m1, m2)
     assert(m1[0].length == m2.length);
 
     var O = MatZero(m1.length, m2[0].length);
-
+	
     for(var j=0;j<m1.length;j++)
     {
         for(var i=0;i<m2[0].length;i++)

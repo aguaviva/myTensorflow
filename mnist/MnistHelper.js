@@ -156,19 +156,20 @@ class ScoreBoard
         }
         this.EndDrawNumbers()
 
-        this.ctx.beginPath();
-        this.ctx.strokeStyle = "red";
         for (var i=0;i<count;i++)
         {
-            if (labels[offset+i] != results[offset+i])
-            {                
-                var x = (i % 15)*40;
-                var y = (Math.floor(i / 15))*40;
-                
-                this.ctx.rect(x, y, 28, 28);
-            }
+			var x = (i % 15)*40;
+			var y = (Math.floor(i / 15))*40;
+
+			this.ctx.beginPath();
+			if (labels[offset+i] != results[offset+i])
+				this.ctx.strokeStyle = "red";                
+			else
+				this.ctx.strokeStyle = "green";                
+			this.ctx.rect(x, y, 28, 28);
+			this.ctx.stroke();
         }
-        this.ctx.stroke();
+        
 
         for (var i=0;i<count;i++)
         {
