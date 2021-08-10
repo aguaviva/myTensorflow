@@ -9,6 +9,7 @@ body { background-color:#ededed; font:norm2al 12px/18px Arial, Helvetica, sans-s
 h1 { display:block; width:600px; margin:20px auto; paddVing-bottom:20px; font:norm2al 24px/30px Georgia, "Times New Roman", Times, serif; color:#333; text-shadow: 1px 2px 3px #ccc; border-bottom:1px solid #cbcbcb; }
 #container { width:600px; margin:0 auto; }
 #trainingErrorPlot { background:#fff; border:1px solid #cbcbcb; }
+#learntFunction { background:#fff; border:1px solid #cbcbcb; }
 #nav { display:block; width:100%; text-align:center; }
 #nav li { display:block; font-weight:bold; line-height:21px; text-shadow:1px 1px 1px #fff; width:100px; height:21px; paddVing:5px; margin:0 10px; background:#e0e0e0; border:1px solid #ccc; -moz-border-radius:4px;-webkit-border-radius:4px; border-radius:4px; float:left; }
 #nav li a { color:#000; display:block; text-decoration:none; width:100%; height:100%; }
@@ -34,84 +35,9 @@ h1 { display:block; width:600px; margin:20px auto; paddVing-bottom:20px; font:no
 <script type="text/javascript" src="src/Network.js"></script>
 <script type="text/javascript" src="src/Matrix.js"></script>
 <script type="text/javascript" src="src/RegDropoutLayer.js"></script>
-<script type="text/javascript" src="mnist/MnistHelper.js"></script>
+<script type="text/javascript" src="helpers/GraphHelper.js"></script>
 </head>
 <script>
-
-class Graph
-{    
-    constructor(name, x, y)
-    {
-        this.cvs= document.getElementById(name);
-        this.ctx = this.cvs.getContext('2d');
-        this.resetPoints();
-		this.setOrigin(x,y)
-        this.Clear();		
-        this.DrawAxis();
-    }
-    Clear()
-    {
-        this.ctx.clearRect(0,0,this.cvs.width,this.cvs.height);
-    }
-    
-	setOrigin(x,y) { this.orgX = x; this.orgY = y; }
-    ToX(x) { return x+this.orgX; }
-    ToY(y) { return - y + this.cvs.height-this.orgY; }
-    
-    DrawAxis()
-    {
-        this.ctx.beginPath();
-        this.ctx.strokeStyle="#000000";    
-        this.ctx.moveTo(0,this.ToY(0)); 
-        this.ctx.lineTo(this.cvs.width,this.ToY(0));
-        this.ctx.moveTo(this.ToX(0),0); 
-        this.ctx.lineTo(this.ToX(0),this.cvs.height);
-        this.ctx.closePath();
-        this.ctx.stroke(); 
-    }
-    
-	resetPoints()
-	{
-        this.points = [];
-        this.lastPoint = null;
-	}
-
-    AddPoint(x)
-    {
-        this.points.push(x);
-        if (this.lastPoint!=null)
-        {
-            this.ctx.beginPath();
-            this.ctx.strokeStyle="#ff0000";    
-            this.ctx.moveTo(this.ToX(this.points.length-1),this.ToY(this.lastPoint)); 
-            this.ctx.lineTo(this.ToX(this.points.length),this.ToY(x));       
-            this.ctx.closePath();
-            this.ctx.stroke();       
-        } 
-        this.lastPoint = x;
-    }
-	
-	drawPoint(x,y)
-	{
-		this.ctx.fillRect(this.ToX(x),this.ToY(y),1,1);
-		//this.ctx.fillRect(10,10,1,1);
-	}
-
-	drawFunction(x,y, func, len)
-	{
-		this.ctx.beginPath();
-		this.ctx.strokeStyle="#ff0000";    
-		this.ctx.moveTo(this.ToX(0),this.ToY(myFunction(0))); 
-		for(var i=0;i<len;i++)
-		{
-			var v = func(i)
-			this.ctx.lineTo(this.ToX(v[0]),this.ToY(v[1])); 
-		}
-		this.ctx.stroke();    	
-	}
-}
-
-//-------------------------------
 
 var trainingData;
 var validationData;
@@ -125,19 +51,6 @@ var trainingErrorPlot = null;
 var iterations = 0;
 var learningRate = 0.01;
 
-function vectorFromIdx(i)
-{
-    var v = Array(10).fill(0);
-    v[i] = 1;
-    return [[[v]]];
-}
-
-function getMaxIdxInVector(vv)
-{
-    var v = vv[0][0][0]
-    return v.indexOf(Math.max.apply(null, v));
-}
-
 function iterate2(inputs, labels, results, offset, size, batchSize, training)
 {   
     assert((size % batchSize) == 0);
@@ -150,8 +63,6 @@ function iterate2(inputs, labels, results, offset, size, batchSize, training)
         for(var j=i;j<(i+batchSize);j++)
         {
 			label = labels[0][0][0]
-			
-			
 		
             network[network.length-1].setValue([[[[label[j]]]]]);
             
@@ -180,6 +91,8 @@ function iterate2(inputs, labels, results, offset, size, batchSize, training)
     return {correct: correct, totalErr: totalErr / size};
 }
 
+var lastTrainingError = 0;
+var lastValidationError = 0;
 function iterate()
 {
     iterations++;
@@ -197,11 +110,14 @@ function iterate()
         var t1 = performance.now();
         var milliseconds = (t1 - t0);
         
-        trainingErrorPlot.AddPoint(res.totalErr * 1000);
-
-        document.getElementById("trainingText").innerHTML = "Epocs:" + iterations + " Epocs/sec: " + (1000.0 / milliseconds).toFixed(2) + "<br>"
-        document.getElementById("trainingText").innerHTML += "Num items: " + len + " Correct: " + res.correct + " ("+ (res.correct*100/len).toFixed(2) +"% ) Error: " + res.totalErr + " <br> ";
-		        
+		if (iterations>1)
+		{
+			trainingErrorPlot.AddSegment(iterations-1,lastTrainingError,iterations,res.totalErr, "#ff0000")
+		}
+		lastTrainingError = res.totalErr
+		
+        document.getElementById("trainingText").innerHTML = "Num items: " + len + "<br>Epoc:" + iterations + " Epocs/sec: " + (1000.0 / milliseconds).toFixed(2) + "<br>"
+        //document.getElementById("trainingText").innerHTML += "Training: Num items: " + len + " Error: " + res.totalErr + " <br> ";
     }
         
     // test    
@@ -211,27 +127,36 @@ function iterate()
         
         var res = iterate2(validationData.inputs, validationData.labels, validationData.results, offset, len, batch, false);    
 
+		if (iterations>1)
+		{
+			trainingErrorPlot.AddSegment(iterations-1,lastValidationError,iterations,res.totalErr, "#0000ff")
+		}
+		lastValidationError = res.totalErr
+
         learntFunction.Clear();		
         learntFunction.DrawAxis();
 
 
 		learntFunction.drawFunction(x,y, function(i)
 		{
-			return [(i*75*6.28/len), myFunction(i*6.248/len)*100];
+			return [(i*6.28/len), myFunction(i*6.248/len)];
 		},len);
 
 		for(var i=0;i<len;i++)
 		{
-			learntFunction.drawPoint(validationData.inputs[0][0][0][i]*75, validationData.results[i]*100);					
+			learntFunction.drawPoint(validationData.inputs[0][0][0][i], validationData.results[i]);					
 		}
+		learntFunction.DrawXMax();
+		learntFunction.DrawYMax();
+		learntFunction.DrawYMin();
 						
-        document.getElementById("validationText").innerHTML = "Num items: " + len + " ("+ (res.correct*100/len).toFixed(2) +"% ) Error: " + res.totalErr + " <br> ";        
+        //document.getElementById("validationText").innerHTML = "Num items: " + len + " Error: " + res.totalErr + " <br> ";        
     }
 }
 
 function myFunction(x)
 {
-	return Math.sin(x)
+	return Math.sin(4*x)
 }
 
 function GenerateSinData(length)
@@ -267,8 +192,10 @@ function init()
 	validationData = GenerateSinData(1000);
    
 	{    
-		trainingErrorPlot = new Graph("trainingErrorPlot",10,10);
-		learntFunction = new Graph("learntFunction",10,160);
+		trainingErrorPlot = new Graph("trainingErrorPlot",-15,0.5, 500,-0.07);
+		trainingErrorPlot.DrawXMax();
+		trainingErrorPlot.DrawYMin();
+		learntFunction = new Graph("learntFunction",-0.2,1,6.28,-1);
 
 		var weights1 = [[RandomMat(1, 16)]];  
 		var bias1 = RandomVec(16);
@@ -282,8 +209,11 @@ function init()
 		network.push(new InputLayer());
 		network.push(new FullyConnectedLayer(weights1, bias1));
 		network.push(new ActivationSigmoidLayer());
+		//network.push(new ActivationReluLayer());
+		
 		network.push(new FullyConnectedLayer(weights2, bias2));
 		network.push(new ActivationSigmoidLayer());
+		//network.push(new ActivationReluLayer());
 		network.push(new FullyConnectedLayer(weights3, bias3));
 		network.push(new CostQuadraticLayer());
 	
@@ -296,18 +226,16 @@ function init()
 <body onload="init()">
 <h1>Learning a sine wave</h1>
 <div id="container">
-
-<h2>Training set</h2>
-<div id="trainingText"></div>
-<h4>Training Error Plot:</h4>
-<canvas id="trainingErrorPlot" width="600" height="100"></canvas>
-<h2>Validation set:</h2>
-<div id="validationText"></div>
-<h4>Function learnt Plot:</h4>
-<canvas id="learntFunction" width="600" height="320"></canvas>
 <h2>Intro</h2>
-<p>This model will try to learn a sine wave function.</p>
-<p>The model used to simulate a sine wave is displayed below. It is a simple feed forward deep neural network with 2 fully connected layers with Sigmoid activations and a final fully connected output layer with as shown below.  </p>
+<p>This online demo trains in your browser a NN to learn a sine wave function.</p>
+<p>It uses a simple feed forward deep neural network with 2 fully connected layers with Sigmoid activations and a final fully connected output layer with as shown below. </p>
+<p>The model used is described in more detail in <a href="https://colab.research.google.com/github/tensorflow/tflite-micro/blob/main/tensorflow/lite/micro/examples/hello_world/train/train_hello_world_model.ipynb">tensorflow's documentation</a> 
+<h2>Training and Validation Loss</h2>
+<canvas id="trainingErrorPlot" width="600" height="100"></canvas>
+<div id="trainingText"></div>
+<div id="validationText"></div>
+<h2>Function learnt Plot:</h2>
+<canvas id="learntFunction" width="600" height="160"></canvas>
 </br>
 <h2>Contact/Questions:</h2>
  &lt;my_github_account_username&gt;$@gmail.com$.

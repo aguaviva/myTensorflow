@@ -34,56 +34,10 @@ h1 { display:block; width:600px; margin:20px auto; paddVing-bottom:20px; font:no
 <script type="text/javascript" src="src/Network.js"></script>
 <script type="text/javascript" src="src/Matrix.js"></script>
 <script type="text/javascript" src="src/RegDropoutLayer.js"></script>
+<script type="text/javascript" src="helpers/GraphHelper.js"></script>
 <script type="text/javascript" src="mnist/MnistHelper.js"></script>
 </head>
 <script>
-
-class Graph
-{    
-    constructor(name)
-    {
-        this.cvs= document.getElementById(name);
-        this.ctx = this.cvs.getContext('2d');
-        this.points = [];
-        this.lastPoint = null;
-        this.Clear();
-        this.DrawAxis();
-    }
-    Clear()
-    {
-        this.ctx.clearRect(0,0,this.cvs.width,this.cvs.height);
-    }
-    
-    ToX(x) { return x+20; }
-    ToY(y) { return - y + this.cvs.height-20; }
-    
-    DrawAxis()
-    {
-        this.ctx.beginPath();
-        this.ctx.strokeStyle="#000000";    
-        this.ctx.moveTo(0,this.ToY(0)); 
-        this.ctx.lineTo(this.cvs.width,this.ToY(0));
-        this.ctx.moveTo(this.ToX(0),0); 
-        this.ctx.lineTo(this.ToX(0),this.cvs.height);
-        this.ctx.closePath();
-        this.ctx.stroke(); 
-    }
-    
-    AddPoint(x)
-    {
-        this.points.push(x);
-        if (this.lastPoint!=null)
-        {
-            this.ctx.beginPath();
-            this.ctx.strokeStyle="#ff0000";    
-            this.ctx.moveTo(this.ToX(this.points.length-1),this.ToY(this.lastPoint)); 
-            this.ctx.lineTo(this.ToX(this.points.length),this.ToY(x));       
-            this.ctx.closePath();
-            this.ctx.stroke();       
-        } 
-        this.lastPoint = x;
-    }
-}
 
 //-------------------------------
 var mnist = null;
@@ -152,6 +106,8 @@ function iterate2(inputs, labels, results, offset, size, batchSize, training)
     return {correct: correct, totalErr: totalErr / size};
 }
 
+var lastTrainingError = 0;
+var lastValidationError = 0;
 function iterate()
 {
     iterations++;
@@ -169,10 +125,14 @@ function iterate()
         var t1 = performance.now();
         var milliseconds = (t1 - t0);
         
-        trainingErrorPlot.AddPoint(res.totalErr * 30);
+		if (iterations>1)
+		{
+			trainingErrorPlot.AddSegment(iterations-1,lastTrainingError,iterations,res.totalErr, "#ff0000")
+		}
+		lastTrainingError = res.totalErr
 
-        document.getElementById("trainingText").innerHTML = "Epocs:" + iterations + " Epocs/sec: " + (1000.0 / milliseconds).toFixed(2) + "<br>"
-        document.getElementById("trainingText").innerHTML += "Num items: " + len + " Correct: " + res.correct + " ("+ (res.correct*100/len).toFixed(2) +"% ) Error: " + res.totalErr + " <br> ";
+        document.getElementById("perfText").innerHTML = "Epocs:" + iterations + " Epocs/sec: " + (1000.0 / milliseconds).toFixed(2) + "<br>"
+        document.getElementById("trainingText").innerHTML = "Num items: " + len + " Correct: " + res.correct + " ("+ (res.correct*100/len).toFixed(2) +"% ) Error: " + res.totalErr + " <br> ";
 		
         trainingSetScoreBoard.Draw(mnist.training_images, mnist.training_labels, results_validation, offset);		
     }
@@ -185,6 +145,12 @@ function iterate()
         testSetScoreBoard.Draw(mnist.validation_images, mnist.validation_labels, results_training, offset);
         
         var res = iterate2(mnist.validation_images, mnist.validation_labels, results_training, offset, len, batch, false);    
+
+		if (iterations>1)
+		{
+			trainingErrorPlot.AddSegment(iterations-1,lastValidationError,iterations,res.totalErr, "#0000ff")
+		}
+		lastValidationError = res.totalErr
         
         document.getElementById("testText").innerHTML = "Num items: " + len + " Correct: " + res.correct + " ("+ (res.correct*100/len).toFixed(2) +"% ) Error: " + res.totalErr + " <br> ";        
     }
@@ -207,8 +173,11 @@ function init()
 
 	
 		trainingSetScoreBoard = new ScoreBoard("trainingSetScoreBoard");
+		
 		testSetScoreBoard = new ScoreBoard("testSetScoreBoard");
-		trainingErrorPlot = new Graph("trainingErrorPlot");
+		trainingErrorPlot = new Graph("trainingErrorPlot",-15,2, 500,-0.25);
+		trainingErrorPlot.DrawXMax();
+		trainingErrorPlot.DrawYMin();
 
 		var weights1 = [[RandomMat(784, 15)]];  //read from 3, ilayer is 4, the +1 is because of the bias
 		var bias1 = RandomVec(15);
@@ -233,29 +202,20 @@ function init()
 <body onload="init()">
 <h1>MNIST 784x15x10</h1>
 <div id="container">
-
-<h2>Training set</h2>
-<div id="trainingText"></div>
-<h4>Training Error Plot:</h4>
-<canvas id="trainingErrorPlot" width="600" height="100"></canvas>
-<h4>Score board:</h4>
-<canvas id="trainingSetScoreBoard" width="600" height="320"></canvas>
-<h2>Predictions on test set</h2>
-<div id="testText"></div>
-</br>
-<canvas id="testSetScoreBoard" width="600" height="320"></canvas>
-
 <h2>Intro</h2>
-
-<p>Finally using MNIST.</p>
-<p>Using the typical 784x15x10 architecture.  </p>
-<p>The numbers are an image 28x28, the data is arranged in array of 28x28=784 and encoded in a png file. </p>
-<p>Credits for the png files (and the inspiration and lectures :) ) go to <a href="http://karpathy.github.io/">Andrej Karpathy</a></p>
-</br>
-</br>
+<p>This online demo trains in your browser a NN to recognize digits from the MNIST set. It uses the typical 784x15x10 architecture.</p>
+<h2>Training and Validation Loss</h2>
+<canvas id="trainingErrorPlot" width="600" height="100"></canvas>
+<div id="perfText"></div>
+<h2>Predictions</h2>
+<h4>Training set</h4>
+<div id="trainingText"></div>
+<canvas id="trainingSetScoreBoard" width="600" height="320"></canvas>
+<h4>Validation set</h4>
+<div id="testText"></div>
+<canvas id="testSetScoreBoard" width="600" height="320"></canvas>
 <h2>Contact/Questions:</h2>
  &lt;my_github_account_username&gt;$@gmail.com$.
-</br>
 </br>
 </div>
 </body>

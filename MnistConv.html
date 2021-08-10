@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>myTensorflow, LeNet-5-like convolutional</title>
+<title>myTensorflow, MNIST LeNet-5-like convolutional</title>
 <style type="text/css">
 <!--
 body { background-color:#ededed; font:norm2al 12px/18px Arial, Helvetica, sans-serif; }
@@ -34,56 +34,10 @@ h1 { display:block; width:600px; margin:20px auto; paddVing-bottom:20px; font:no
 <script type="text/javascript" src="src/Network.js"></script>
 <script type="text/javascript" src="src/Matrix.js"></script>
 <script type="text/javascript" src="src/RegDropoutLayer.js"></script>
+<script type="text/javascript" src="helpers/GraphHelper.js"></script>
 <script type="text/javascript" src="mnist/MnistHelper.js"></script>
 </head>
 <script>
-
-class Graph
-{    
-    constructor(name)
-    {
-        this.cvs= document.getElementById(name);
-        this.ctx = this.cvs.getContext('2d');
-        this.points = [];
-        this.lastPoint = null;
-        this.Clear();
-        this.DrawAxis();
-    }
-    Clear()
-    {
-        this.ctx.clearRect(0,0,this.cvs.width,this.cvs.height);
-    }
-    
-    ToX(x) { return x+20; }
-    ToY(y) { return - y + this.cvs.height-20; }
-    
-    DrawAxis()
-    {
-        this.ctx.beginPath();
-        this.ctx.strokeStyle="#000000";    
-        this.ctx.moveTo(0,this.ToY(0)); 
-        this.ctx.lineTo(this.cvs.width,this.ToY(0));
-        this.ctx.moveTo(this.ToX(0),0); 
-        this.ctx.lineTo(this.ToX(0),this.cvs.height);
-        this.ctx.closePath();
-        this.ctx.stroke(); 
-    }
-    
-    AddPoint(x)
-    {
-        this.points.push(x);
-        if (this.lastPoint!=null)
-        {
-            this.ctx.beginPath();
-            this.ctx.strokeStyle="#ff0000";    
-            this.ctx.moveTo(this.ToX(this.points.length-1),this.ToY(this.lastPoint)); 
-            this.ctx.lineTo(this.ToX(this.points.length),this.ToY(x));       
-            this.ctx.closePath();
-            this.ctx.stroke();       
-        } 
-        this.lastPoint = x;
-    }
-}
 
 //-------------------------------
 var mnist;
@@ -152,6 +106,7 @@ function iterate2(inputs, labels, results, offset, size, batchSize, training)
     return {correct: correct, totalErr: totalErr / size};
 }
 
+var lastTrainingError = 0;
 function iterate()
 {  
     iterations++;
@@ -169,11 +124,15 @@ function iterate()
 		var t1 = performance.now();
 		var milliseconds = (t1 - t0);
 
-		document.getElementById("trainingText").innerHTML = "Epocs:" + iterations + " Epocs/sec: " + (1000.0 / milliseconds).toFixed(2) + "<br>"
-		document.getElementById("trainingText").innerHTML += "Num items: " + len + " Correct: " + res.correct + " ("+ (res.correct*100/len).toFixed(2) +"% ) Error: " + res.totalErr + " <br> ";
-		
-		trainingErrorPlot.AddPoint(res.totalErr * 30);
-		
+		if (iterations>1)
+		{
+			trainingErrorPlot.AddSegment(iterations-1,lastTrainingError,iterations,res.totalErr, "#ff0000")
+		}
+		lastTrainingError = res.totalErr
+
+		document.getElementById("perfText").innerHTML = "Epocs:" + iterations + " Epocs/sec: " + (1000.0 / milliseconds).toFixed(2) + "<br>"
+		document.getElementById("trainingText").innerHTML = "Num items: " + len + " Correct: " + res.correct + " ("+ (res.correct*100/len).toFixed(2) +"% ) Error: " + res.totalErr + " <br> ";
+			
 		trainingSetScoreBoard.Draw(mnist.training_images, mnist.training_labels, results_training, offset);
     }
         
@@ -222,12 +181,13 @@ function init()
 			
 			mnist.training_images_conv[i] = v;
 		}
-
 		
-		trainingErrorPlot = new Graph("trainingErrorPlot");
 		trainingSetScoreBoard = new ScoreBoard("trainingSetScoreBoard");
 		trainingSetScoreBoard.Draw(mnist.training_images, mnist.training_labels, results_training, 0);
-		//testSetScoreBoard = new ScoreBoard("testSetScoreBoard");
+
+		trainingErrorPlot = new Graph("trainingErrorPlot",-20,400, 500,-50);
+		trainingErrorPlot.DrawXMax();
+		trainingErrorPlot.DrawYMin();
 
 		var weights1 = TensorRandom(32, 1, 5, 5);  
 		var bias1 = RandomVec(32);
@@ -265,23 +225,25 @@ function init()
 
 
 <body onload="init()">
-<h1>LeNet-5-like convolutional</h1>
+<h1>MNIST LeNet-5-like convolutional</h1>
 <div id="container">
-	
-<h2>Training set</h2>
-<div id="trainingText"></div>
-<h4>Training Error Plot:</h4>
-<canvas id="trainingErrorPlot" width="600" height="100"></canvas>
-<h4>Score board:</h4>
-<canvas id="trainingSetScoreBoard" width="600" height="32"></canvas>
-
 <h2>Intro</h2>
-<div id="text" ></div>
-
-<p>Finally using conv nets.</p>
-<p>The training process is veeeery slow, that is why the learning set is only 10 images :). </p>
-<p>After each iteration the error is going down and after some epochs the next can successfully learn the pattern. </p>
-</br>
+<p>Warning! This online demo is very slow. It trains CNNs in your browser to recognize digits from the MNIST set.</p>
+<p>It uses the following architecture:
+<ul>
+  <li>CNN, 5x5 kernel, 32 filters </li>
+  <li>CNN, 5x5 kernel, 64 filters</li>
+  <li>Max pool layer</li>
+  <li>Fully connected layer</li>
+</ul>  
+</p>
+<h2>Training and Validation Loss</h2>
+<canvas id="trainingErrorPlot" width="600" height="100"></canvas>
+<div id="perfText"></div>
+<h2>Predictions</h2>
+<p>Just showing the training set, just 10 images so it is not that slow!</p>
+<div id="trainingText"></div>
+<canvas id="trainingSetScoreBoard" width="600" height="32"></canvas>
 <h2>Contact/Questions:</h2>
  &lt;my_github_account_username&gt;$@gmail.com$.
 </br>
