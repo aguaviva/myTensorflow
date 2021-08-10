@@ -13,10 +13,9 @@ class CostQuadraticLayer
     forwardPass(input)
     {
         assert(input.length == this.value.length);
-        assert(input[0].length == this.value[0].length);
-        assert(input[0][0].length == this.value[0][0].length);
-        assert(input[0][0][0].length == this.value[0][0][0].length);
-        
+		assert(input[0].length == this.value[0].length);
+		assert(input[0][0].length == this.value[0][0].length);
+		assert(input[0][0][0].length == this.value[0][0][0].length);
         var err = 0;
         
         this.input = input;
