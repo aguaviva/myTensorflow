@@ -117,19 +117,24 @@ function PrintMat(prefix, mm)
     var d = GetDimensions(mm);
     var dim = d.length
     
-    if (dim==2)
+	if (dim==0)
+	{
+	}
+	else if (dim==2)
     {
         return PrintMat2D(prefix, mm)
     }
-    else if (dim==3)
+    else if (dim>=3)
     {
         var str = ""
-        for(var k=0; k<d[0];k++)
+        for(var k=0; k<mm.length;k++)
         {
-            str += prefix+ PrintMat(mm[k])
+            str += PrintMat(prefix, mm[k])
         }
+		return str;
     }    
-    return str;
+
+    return "unknown rank";
 }
 
 function GetZeroedVector(n)

@@ -29,10 +29,10 @@ function BackwardPropagation(network)
     var layerDerivative = network[network.length-1].backPropagation()
 
     for(var i=network.length-2;i>0;i--)
-    {   
-        layerDerivative = network[i + 1].backPropagation(layerDerivative);
+    {
         if (network[i].computeDeltas!=undefined)
             network[i].computeDeltas(layerDerivative);
+        layerDerivative = network[i].backPropagation(layerDerivative);
     }
 }
 

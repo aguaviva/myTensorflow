@@ -25,7 +25,7 @@ class FullyConnectedLayer
         // for training
         var weightDeltas = MulMat(TransposeMat(this.input[0][0]), layerDerivative[0][0]);
         var biasDeltas   = layerDerivative[0][0];
-        
+
         // batching
         if (this.weightDeltas==undefined)
         {

@@ -188,9 +188,10 @@ function init()
 		network.push(new InputLayer());
 		network.push(new FullyConnectedLayer(weights1, bias1));
 		network.push(new ActivationSigmoidLayer());
+		
 		network.push(new FullyConnectedLayer(weights2, bias2));
 		network.push(new ActivationSigmoidLayer());
-		//network.push(new CostQuadraticLayer());
+		
 		network.push(new CostArgMaxCrossEntropyLayer());
 		
 		setInterval(iterate,10); 
