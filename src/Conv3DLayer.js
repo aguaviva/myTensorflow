@@ -85,7 +85,7 @@ class Conv3DLayer
     }
     
     
-    computeDeltas(layerDerivative)
+    computeGradients(layerDerivative)
     {
         var ld = [];
         
@@ -132,17 +132,17 @@ class Conv3DLayer
         }
         
         var deltas = MulMat(deltas,ld);
-        this.weightDeltas = []
+        this.weightsGradients = []
         for(var k=0;k<this.depth;k++)
-            this.weightDeltas[k] = ConvertMat(deltas.slice(k*this.kernelDim*this.kernelDim, (k+1)*this.kernelDim*this.kernelDim), this.kernelDim,this.kernelDim);
-        this.biasDeltas   = deltas[deltas.length-1][0]
+            this.weightsGradients[k] = ConvertMat(deltas.slice(k*this.kernelDim*this.kernelDim, (k+1)*this.kernelDim*this.kernelDim), this.kernelDim,this.kernelDim);
+        this.biasGradients   = deltas[deltas.length-1][0]
     }    
         
     train(LearningRate)
     {
         for(var k=0;k<this.depth;k++)
-            this.weights[k] = SubMat( this.weights[k], MulKMat(LearningRate,this.weightDeltas[k]));
-        this.bias    = this.bias - LearningRate * this.biasDeltas;
+            this.weights[k] = SubMat( this.weights[k], MulKMat(LearningRate,this.weightsGradients[k]));
+        this.bias    = this.bias - LearningRate * this.biasGradients;
     }        
         
     AddWeight(i,val)
@@ -208,10 +208,10 @@ class Conv3DFM
         return out;
     }
     
-    computeDeltas(layerDerivative)
+    computeGradients(layerDerivative)
     {
-        this.weightDeltas = []
-        this.biasDeltas = []
+        this.weightsGradients = []
+        this.biasGradients = []
        
         var ld = [];
         for(var z=0;z<layerDerivative.length;z++)
@@ -267,17 +267,17 @@ class Conv3DFM
         
         for(var fm=0;fm<this.weights.length;fm++)
         {                                       
-            this.weightDeltas[fm] = []
+            this.weightsGradients[fm] = []
             for(var k=0;k<this.weights[0].length;k++)
             {                
                 var a = (k + fm* this.weights[0].length);
                 var b = a+1;//((fm+1) + k * this.weights.length);
-                this.weightDeltas[fm][k] = ConvertMat(deltas2.slice(a*this.kernelDim*this.kernelDim, b*this.kernelDim*this.kernelDim), this.kernelDim,this.kernelDim);
+                this.weightsGradients[fm][k] = ConvertMat(deltas2.slice(a*this.kernelDim*this.kernelDim, b*this.kernelDim*this.kernelDim), this.kernelDim,this.kernelDim);
             }
         }        
         
         for(var fm=0;fm<this.weights.length;fm++)
-            this.biasDeltas[fm]   = deltas2[deltas2.length-1][0]    
+            this.biasGradients[fm]   = deltas2[deltas2.length-1][0]    
     }
         
     train(LearningRate)
@@ -285,8 +285,8 @@ class Conv3DFM
         for(var fm=0;fm<this.weights.length;fm++)
         {        
             for(var k=0;k<this.depth;k++)
-                this.weights[fm][k] = SubMat( this.weights[fm][k], MulKMat(LearningRate,this.weightDeltas[fm][k]));
-            this.bias[fm]    = this.bias[fm] - LearningRate * this.biasDeltas[fm];
+                this.weights[fm][k] = SubMat( this.weights[fm][k], MulKMat(LearningRate,this.weightsGradients[fm][k]));
+            this.bias[fm]    = this.bias[fm] - LearningRate * this.biasGradients[fm];
         }
     }        
 }

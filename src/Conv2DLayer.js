@@ -160,17 +160,17 @@ class Conv2DLayer
         return Conv2DTensorForward(layerDerivative, revKernel, zeroBias)
     }   
     
-    computeDeltas(layerDerivative)
+    computeGradients(layerDerivative)
     {       
-        this.biasDeltas = []
-        this.weightDeltas = []
+        this.biasGradients = []
+        this.weightsGradients = []
 
         for(var l=0;l<layerDerivative.length;l++)
-            this.biasDeltas[l] = 0
+            this.biasGradients[l] = 0
 
         for(var l=0;l<layerDerivative.length;l++)
         {       
-            this.weightDeltas[l] = []
+            this.weightsGradients[l] = []
     
             var bb = 0;
     
@@ -185,10 +185,10 @@ class Conv2DLayer
                     ww = AddMat(ww, o[0]);                    
                     bb += o[1];
                 }
-                this.weightDeltas[l][k] = ww;
+                this.weightsGradients[l][k] = ww;
             }
             
-            this.biasDeltas[l] += bb;
+            this.biasGradients[l] += bb;
         }
         
     }
@@ -197,16 +197,16 @@ class Conv2DLayer
     {
         for(var w=0;w<this.weights.length;w++)
         {
-            assert(this.weightDeltas.length == this.weights.length);
+            assert(this.weightsGradients.length == this.weights.length);
             
             for(var z=0;z<this.weights[0].length;z++)
             {
-                assert(this.weightDeltas[0].length == this.weights[0].length);
+                assert(this.weightsGradients[0].length == this.weights[0].length);
                 
-                this.weights[w][z] = SubMat( this.weights[w][z], (MulKMat(LearningRate,this.weightDeltas[w][z])));
+                this.weights[w][z] = SubMat( this.weights[w][z], (MulKMat(LearningRate,this.weightsGradients[w][z])));
             }
             
-            this.bias[w]    = this.bias[w] - LearningRate * this.biasDeltas[w];
+            this.bias[w]    = this.bias[w] - LearningRate * this.biasGradients[w];
             
         }
         

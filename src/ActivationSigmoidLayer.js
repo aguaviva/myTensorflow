@@ -52,7 +52,7 @@ class ActivationSigmoidLayer
         return output;                
     }
     
-    computeDeltas(layerDerivative)
+    computeGradients(layerDerivative)
     {
     }
         

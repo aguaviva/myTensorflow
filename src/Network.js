@@ -30,8 +30,8 @@ function BackwardPropagation(network)
 
     for(var i=network.length-2;i>0;i--)
     {
-        if (network[i].computeDeltas!=undefined)
-            network[i].computeDeltas(layerDerivative);
+        if (network[i].computeGradients!=undefined)
+            network[i].computeGradients(layerDerivative);
         layerDerivative = network[i].backPropagation(layerDerivative);
     }
 }
@@ -217,8 +217,8 @@ function TestNetwork(network, input, output)
         str += "<pre>"+i+" '" + network[i].name + "'</pre>";
         if (network[i].weights!=undefined)
         {
-            str += "<pre>weights: "+PrintTensor(network[i].weightDeltas)+"</pre>";
-            str += "<pre>bias: "+network[i].biasDeltas+"</pre>";
+            str += "<pre>weights: "+PrintTensor(network[i].weightsGradients)+"</pre>";
+            str += "<pre>bias: "+network[i].biasGradients+"</pre>";
         }
     }
 

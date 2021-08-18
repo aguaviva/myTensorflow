@@ -21,7 +21,7 @@ class Conv1D
         return Conv1DInputForward(this.layerDerivative, revWeights, 0, this.padding);
     }
 
-    computeDeltas(layerDerivative)
+    computeGradients(layerDerivative)
     {
         var deltas = []
         for(var i=0;i<this.weights.length+1;i++)

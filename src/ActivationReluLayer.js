@@ -49,7 +49,7 @@ class ActivationReluLayer
         return output;                
     }
     
-    computeDeltas(layerDerivative)
+    computeGradients(layerDerivative)
     {
     }
         

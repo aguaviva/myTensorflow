@@ -20,32 +20,32 @@ class FullyConnectedLayer
         return [[MulMat(layerDerivative[0][0], t)]];
     }
    
-    computeDeltas(layerDerivative)
+    computeGradients(layerDerivative)
     {
         // for training
-        var weightDeltas = MulMat(TransposeMat(this.input[0][0]), layerDerivative[0][0]);
-        var biasDeltas   = layerDerivative[0][0];
+        var weightsGradients = MulMat(TransposeMat(this.input[0][0]), layerDerivative[0][0]);
+        var biasGradients    = layerDerivative[0][0];
 
         // batching
-        if (this.weightDeltas==undefined)
+        if (this.weightsGradients==undefined)
         {
-            this.weightDeltas = weightDeltas;
-            this.biasDeltas   = biasDeltas;
+            this.weightsGradients = weightsGradients;
+            this.biasGradients   = biasGradients;
         }
         else
         {
-            this.weightDeltas = AddMat(this.weightDeltas, weightDeltas);
-            this.biasDeltas   = AddMat(this.biasDeltas, biasDeltas);
+            this.weightsGradients = AddMat(this.weightsGradients, weightsGradients);
+            this.biasGradients   = AddMat(this.biasGradients, biasGradients);
         }
         
     }
 
     train(LearningRate)
     {
-        this.weights = [[SubMat( this.weights[0][0], MulKMat(LearningRate,this.weightDeltas))]];
-        this.bias    = SubMat( [this.bias],    MulKMat(LearningRate,this.biasDeltas))[0];
+        this.weights = [[SubMat( this.weights[0][0], MulKMat(LearningRate,this.weightsGradients))]];
+        this.bias    = SubMat( [this.bias],    MulKMat(LearningRate,this.biasGradients))[0];
         
-        this.weightDeltas = undefined;
-        this.biasDeltas = undefined;
+        this.weightsGradients = undefined;
+        this.biasGradients = undefined;
     }
 }
