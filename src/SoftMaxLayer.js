@@ -1,14 +1,8 @@
-class CostArgMaxCrossEntropyLayer
+class SoftMaxLayer
 {
     constructor()
     {
-        this.name ="CostArgMaxCrossEntropyLayer";
-    }
-
-
-    setValue(idx)
-    {
-        this.idx = idx;
+        this.name ="SoftMaxLayer";
     }
 
     forwardPass(input)
@@ -20,8 +14,7 @@ class CostArgMaxCrossEntropyLayer
        
         this.input = input[0][0][0];
 
-    
-        //arg max
+		// exponentiate
         this.s = []
         var total = 0;
         for(var x=0;x<input[0][0][0].length;x++)
@@ -31,24 +24,17 @@ class CostArgMaxCrossEntropyLayer
             total += v;
         }
 
+		// "normalize"
         for(var x=0;x<input[0][0][0].length;x++)
         {
             this.s[x] /= total;
         }
             
-        // cross entropy    
-        var err = -Math.log(this.s[this.idx]);
-
-        return [[[[err]]]];   
+        return [[[this.s]]];   
     }
 
-    backPropagation(blah)
+    backPropagation(layerDerivative)
     {        
-        // cross entropy derivative
-        var layerDerivative = TensorZero(1, 1, 1, this.s.length);        
-        layerDerivative[0][0][0][this.idx] = -1.0 / this.s[this.idx];        
-    
-        // argmax derivative
         var J = MatZero(layerDerivative[0][0][0].length, layerDerivative[0][0][0].length);        
         
         for(var y=0;y<layerDerivative[0][0][0].length;y++)

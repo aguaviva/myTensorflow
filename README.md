@@ -29,7 +29,7 @@ It supports the following layers:
    - Dropout 1D & 2D
 -  Cost layers
    - Quadratic error
-   - Cross entropy (needs arg max)
+   - SoftMax + Cross entropy 
 -  Misc 
    - flatten layer
 

@@ -189,8 +189,7 @@ class Conv2DLayer
             }
             
             this.biasGradients[l] += bb;
-        }
-        
+        }        
     }
         
     train(LearningRate)
@@ -207,9 +206,7 @@ class Conv2DLayer
             }
             
             this.bias[w]    = this.bias[w] - LearningRate * this.biasGradients[w];
-            
         }
-        
     }        
         
 }

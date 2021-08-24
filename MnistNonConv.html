@@ -16,7 +16,7 @@ h1 { display:block; width:600px; margin:20px auto; paddVing-bottom:20px; font:no
 </style>
 <script type="text/javascript" src="src/ActivationSigmoidLayer.js"></script>
 <script type="text/javascript" src="src/ActivationReluLayer.js"></script>
-<script type="text/javascript" src="src/ArgMaxLayer.js"></script>
+<script type="text/javascript" src="src/SoftMaxLayer.js"></script>
 <script type="text/javascript" src="src/AveragePool1DLayer.js"></script>
 <script type="text/javascript" src="src/AveragePool2DLayer.js"></script>
 <script type="text/javascript" src="src/ConvHelpers.js"></script>
@@ -25,7 +25,7 @@ h1 { display:block; width:600px; margin:20px auto; paddVing-bottom:20px; font:no
 <script type="text/javascript" src="src/Conv3DLayer.js"></script>
 <script type="text/javascript" src="src/CostQuadraticLayer.js"></script>
 <script type="text/javascript" src="src/CostCrossEntropyLayer.js"></script>
-<script type="text/javascript" src="src/CostArgMaxCrossEntropyLayer.js"></script>
+<script type="text/javascript" src="src/CostSoftMaxCrossEntropyLayer.js"></script>
 <script type="text/javascript" src="src/FlattenLayer.js"></script>
 <script type="text/javascript" src="src/FullyConnectedLayer.js"></script>
 <script type="text/javascript" src="src/InputLayer.js"></script>
@@ -192,7 +192,7 @@ function init()
 		network.push(new FullyConnectedLayer(weights2, bias2));
 		network.push(new ActivationSigmoidLayer());
 		
-		network.push(new CostArgMaxCrossEntropyLayer());
+		network.push(new CostSoftMaxCrossEntropyLayer());
 		
 		setInterval(iterate,10); 
 	});
