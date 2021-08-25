@@ -40,13 +40,12 @@ h1 { display:block; width:600px; margin:20px auto; paddVing-bottom:20px; font:no
 <script>
 
 //-------------------------------
-var mnist;
+var mnist = null;
 
-var network = []
-var outputs = [];
+var networkTape = []
 
-var results_training;
-var results_validation;
+var results_training = null;
+var results_validation = null;
 
 var trainingSetScoreBoard = null;
 var trainingErrorPlot = null;
@@ -59,10 +58,12 @@ function getMaxIdxInVector(v)
     return v.indexOf(Math.max.apply(null, v));
 }
 
-function iterate2(inputs, labels, results, size, miniBatchSize, training)
+function processEpoch(inputs, labels, results, size, miniBatchSize, training)
 {   
     assert((size % miniBatchSize) == 0);
     
+	var beginTime = performance.now();  
+
     var totalErr = 0;
     var correct = 0;
 
@@ -72,12 +73,12 @@ function iterate2(inputs, labels, results, size, miniBatchSize, training)
 		//
         for(var j=i;j<(i+miniBatchSize);j++)
         {
-            network[network.length-1].setValue(labels[j]);
+            networkTape[networkTape.length-1].setValue(labels[j]);
             
-            totalErr += ForwardPropagation(network, inputs[j])[0][0][0][0];
+            totalErr += ForwardPropagation(networkTape, inputs[j])[0][0][0][0];
                     
             // get prediction        
-            var output = network[network.length-1].input;                
+            var output = networkTape[networkTape.length-1].input;                
             var index = getMaxIdxInVector(output)            
             
             results[j] = index;
@@ -87,46 +88,51 @@ function iterate2(inputs, labels, results, size, miniBatchSize, training)
                                     
             if (training)
             {
-                BackwardPropagation(network);        
+                BackwardPropagation(networkTape);        
             }            
         }            
         
         if (training)
         {
-            ApplyGradients(network, learningRate/miniBatchSize);    
+            ApplyGradients(networkTape, learningRate/miniBatchSize);    
         }        
     }    
-    
-    return {correct: correct, totalErr: totalErr / size};
+
+	var endTime = performance.now();  
+	
+    return {correct: correct, totalErr: totalErr / size, milliseconds: (endTime-beginTime)};
 }
 
-var lastTrainingError = 0;
+var lastTrainingError = 1e6;
 function mainLoop()
 {  
     iterations++;
 
-    // train
+    // Train
+	//
     { 
         var len = mnist.training_images.length;
         var miniBatchSize = 1;
-		
-		var t0 = performance.now();
-		
-		var res = iterate2(mnist.training_images_conv, mnist.training_labels, results_training, len, miniBatchSize, true);
 
-		var t1 = performance.now();
-		var milliseconds = (t1 - t0);
+        // Do training
+        //
+		var t0 = performance.now();		
+		var res = processEpoch(mnist.training_images_conv, mnist.training_labels, results_training, len, miniBatchSize, true);
+		var milliseconds = (performance.now() - t0);
 
-		if (iterations>1)
+		// Update training loss graph
+		//
 		{
 			trainingErrorPlot.AddSegment(iterations-1,lastTrainingError,iterations,res.totalErr, "#ff0000")
-		}
-		lastTrainingError = res.totalErr
+			lastTrainingError = res.totalErr
 
-		document.getElementById("perfText").innerHTML = "Epocs:" + iterations + " Epocs/sec: " + (1000.0 / milliseconds).toFixed(2) + "<br>"
-		document.getElementById("trainingText").innerHTML = "Num items: " + len + " Correct: " + res.correct + " ("+ (res.correct*100/len).toFixed(2) +"% ) Error: " + res.totalErr + " <br> ";
-			
-		trainingSetScoreBoard.Draw(mnist.training_images, mnist.training_labels, results_training, 0);
+			document.getElementById("perfText").innerHTML = "Epocs:" + iterations + " Epocs/sec: " + (1000.0 / milliseconds).toFixed(2) + "<br>"
+			document.getElementById("trainingText").innerHTML = "Num items: " + len + " Correct: " + res.correct + " ("+ (res.correct*100/len).toFixed(2) +"% ) Error: " + res.totalErr + " <br> ";
+		}
+
+        // Draw Training score board
+        //
+		trainingSetScoreBoard.Draw(mnist.training_images, mnist.training_labels, results_training, 0);		
     }
 }
 
@@ -162,6 +168,8 @@ function init()
 			}
 		}
 
+		// Init plot charts/scoreboards
+		//
 		{
 			trainingSetScoreBoard = new ScoreBoard("trainingSetScoreBoard");
 			trainingSetScoreBoard.Draw(mnist.training_images, mnist.training_labels, results_training, 0);
@@ -173,18 +181,18 @@ function init()
 
 		// network definition
 		//
-		network.push(new InputLayer());
-		network.push(new Conv2DLayer(TensorRandom(32, 1, 5, 5), RandomVec(32)));
-		network.push(new ActivationSigmoidLayer());
-		network.push(new MaxPool2DLayer());
-		network.push(new Conv2DLayer(TensorRandom(64, 32, 5, 5), RandomVec(64)));
-		network.push(new ActivationSigmoidLayer());
-		network.push(new MaxPool2DLayer());
-		network.push(new FlattenLayer());
-		network.push(new FullyConnectedLayer(TensorRandom(1,1, 7*7*64, 1024), RandomVec(1024)));
-		network.push(new ActivationSigmoidLayer());
-		network.push(new FullyConnectedLayer(TensorRandom(1,1, 1024, 10), RandomVec(10)));
-		network.push(new CostSoftMaxCrossEntropyLayer());
+		networkTape.push(new InputLayer());
+		networkTape.push(new Conv2DLayer(TensorRandom(32, 1, 5, 5), RandomVec(32)));
+		networkTape.push(new ActivationSigmoidLayer());
+		networkTape.push(new MaxPool2DLayer());
+		networkTape.push(new Conv2DLayer(TensorRandom(64, 32, 5, 5), RandomVec(64)));
+		networkTape.push(new ActivationSigmoidLayer());
+		networkTape.push(new MaxPool2DLayer());
+		networkTape.push(new FlattenLayer());
+		networkTape.push(new FullyConnectedLayer(TensorRandom(1,1, 7*7*64, 1024), RandomVec(1024)));
+		networkTape.push(new ActivationSigmoidLayer());
+		networkTape.push(new FullyConnectedLayer(TensorRandom(1,1, 1024, 10), RandomVec(10)));
+		networkTape.push(new CostSoftMaxCrossEntropyLayer());
 		   
 		setInterval(mainLoop, 10); 		
 	});	

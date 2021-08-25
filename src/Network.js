@@ -43,17 +43,6 @@ function ApplyGradients(network, LearningRate)
     }
 }
 
-function CalcError(network, input, output)
-{
-    var totalErr = 0;
-    for(var i=0;i<input.length;i++)
-    {
-        var err = SubMat(ForwardPropagation(network, input[i]), output[i]);
-        totalErr += MulMat(err, TransposeMat(err))[0][0];
-    }
-    return totalErr;
-}
-
 //--------------------------------------------------------------------
 
 function Print(str)
