@@ -8,6 +8,6 @@
 
 ### old test suite (tensorflow tests not available)
 
-- [Sine wave](https://aguaviva.github.io/myTensorflow/tests/TestSuite.html)
+- [old tests](https://aguaviva.github.io/myTensorflow/tests/TestSuite.html)
 
 
