@@ -143,6 +143,17 @@ function init()
     network.push(new FullyConnectedLayer(weights2, bias2));
     network.push(new CostQuadraticLayer());  
 
+	Print("<h2>Model summary</h2>")
+	model_summary = "<ol>"
+	for(var i=0;i<network.length;i++)
+	{
+		model_summary += "<li>" + "&nbsp;&nbsp;&nbsp;" + network[i].name + "</li>"
+	}
+	model_summary += "</ol>"
+	Print(model_summary)
+
+	Print("<h2>Training loss</h2>")
+	iteration_loss = "<ol>"
     for(var i=0;i<10;i++)
     {
         network[network.length-1].setValue(output);
@@ -150,24 +161,24 @@ function init()
         //DumpWeights(network, input);
         BackwardPropagation(network);
         ApplyGradients(network, 0.1);
-        Print(nets[0][0] + "<br>")
+        iteration_loss += "<li>" + "&nbsp;&nbsp;&nbsp;" + nets[0][0] + "</li>"
     }
+	iteration_loss += "</ol>"
+	Print(iteration_loss)
 }
 </script>
 
 <body onload="init()">
-<h1>Conv Nets test suite</h1>
+	<h1>mnist_conv2d1332_conv2d2332_full</h1>
 
-Test suite results, trains the NN 10 times and compares the result with tensorflow results
+	<p>Test suite results, trains the NN 10 times, outputs to be compared with its corresponding jupyter notebook</p>
 
-<div id="container">
-<div id="text" ></div>
-</br>
-</br>
-<h2>Contact/Questions:</h2>
- &lt;my_github_account_username&gt;$@gmail.com$.
-</br>
-</br>
-</div>
+	<div id="container">
+		<div id="text" ></div>
+		<h2>Contact/Questions:</h2>
+		&lt;my_github_account_username&gt;$@gmail.com$.
+		</br>
+		</br>
+	</div>
 </body>
 </html>
