@@ -236,7 +236,7 @@ function TestResult(name, network, input, output, learningRate, expected)
         var nets = ForwardPropagation(network, input);
         //DumpWeights(network, input);
         BackwardPropagation(network);
-        ApplyDeltas(network, learningRate);
+        ApplyGradients(network, learningRate);
     }
 
     var res = ForwardPropagation(network, input)
@@ -256,7 +256,7 @@ function DebugResult(name, network, input, output, learningRate, expected)
         var nets = ForwardPropagation(network, input);
         DumpWeights(network, input);
         BackwardPropagation(network);
-        ApplyDeltas(network, learningRate);
+        ApplyGradients(network, learningRate);
     }
 
     var res = ForwardPropagation(network, input)
