@@ -45,7 +45,7 @@ var mnist = null;
 var networkTape = []
 
 var results_training = null;
-var results_validation = null;
+var results_testing = null;
 
 var trainingSetScoreBoard = null;
 var trainingErrorPlot = null;
@@ -104,7 +104,7 @@ function processEpoch(inputs, labels, results, size, miniBatchSize, training)
 }
 
 var lastTrainingError = 1e6;
-var lastValidationError = 1e6;
+var lastTestingError = 1e6;
 var iterations = 0;
 function mainLoop()
 {
@@ -118,12 +118,12 @@ function mainLoop()
 
         // Draw Training score board
         //
-        trainingSetScoreBoard.Draw(mnist.training_images, mnist.training_labels, results_validation, 0);		       
+        trainingSetScoreBoard.Draw(mnist.training_images, mnist.training_labels, results_training, 0);		       
         
         // Do training
         //
         var t0 = performance.now();       
-        var res = processEpoch(mnist.training_images, mnist.training_labels, results_validation, len, miniBatchSize, true);
+        var res = processEpoch(mnist.training_images, mnist.training_labels, results_training, len, miniBatchSize, true);
         var milliseconds = (performance.now() - t0);
         
 		// Update training loss graph
@@ -137,24 +137,24 @@ function mainLoop()
         }
     }
         
-    // Validation
+    // Testing
     {   
         var len = 400;
         
-        // Draw Validation score board
-        testSetScoreBoard.Draw(mnist.validation_images, mnist.validation_labels, results_training, 0);
+        // Draw testing score board
+        testingSetScoreBoard.Draw(mnist.testing_images, mnist.testing_labels, results_testing, 0);
         
-        // Do validation
+        // Do testing
         //
-        var res = processEpoch(mnist.validation_images, mnist.validation_labels, results_training, len, 1, false);    
+        var res = processEpoch(mnist.testing_images, mnist.testing_labels, results_testing, len, 1, false);    
 
-		// Update validation loss graph
+		// Update testing loss graph
 		//
         {
-            trainingErrorPlot.AddSegment(iterations-1,lastValidationError,iterations,res.totalErr, "#0000ff")
-            lastValidationError = res.totalErr
+            trainingErrorPlot.AddSegment(iterations-1,lastTestingError,iterations,res.totalErr, "#0000ff")
+            lastTestingError = res.totalErr
             
-            document.getElementById("testText").innerHTML = "Num items: " + len + " Correct: " + res.correct + " ("+ (res.correct*100/len).toFixed(2) +"% ) Error: " + res.totalErr + " <br> ";        
+            document.getElementById("testingText").innerHTML = "Num items: " + len + " Correct: " + res.correct + " ("+ (res.correct*100/len).toFixed(2) +"% ) Error: " + res.totalErr + " <br> ";        
         }
     }
 }
@@ -168,10 +168,10 @@ function init()
         {
             mnist={}
 
-            // choose validation set
-            mnist.validation_images = data.inputs.slice(3000,6000)
-            mnist.validation_labels = data.labels.slice(3000,6000)	
-            results_validation = Array(mnist.validation_labels.length).fill(-1);
+            // choose testing set
+            mnist.testing_images = data.inputs.slice(3000,6000)
+            mnist.testing_labels = data.labels.slice(3000,6000)	
+            results_testing = Array(mnist.testing_labels.length).fill(-1);
             
             // choose training set
             mnist.training_images = data.inputs.slice(0,3000)
@@ -183,7 +183,7 @@ function init()
 		//
         {
             trainingSetScoreBoard = new ScoreBoard("trainingSetScoreBoard");		
-            testSetScoreBoard     = new ScoreBoard("testSetScoreBoard");
+            testingSetScoreBoard     = new ScoreBoard("testingSetScoreBoard");
             
             trainingErrorPlot = new Graph("trainingErrorPlot",-15,2, 500,-0.25);
             trainingErrorPlot.DrawXMax();
@@ -210,16 +210,16 @@ function init()
 <div id="container">
 <h2>Intro</h2>
 <p>This online demo trains in your browser a NN to recognize digits from the MNIST set. It uses the typical 784x15x10 architecture.</p>
-<h2>Training and Validation Loss</h2>
+<h2>Training and Testing Loss</h2>
 <canvas id="trainingErrorPlot" width="600" height="100"></canvas>
 <div id="perfText"></div>
 <h2>Predictions</h2>
 <h4>Training set</h4>
 <div id="trainingText"></div>
 <canvas id="trainingSetScoreBoard" width="600" height="320"></canvas>
-<h4>Validation set</h4>
-<div id="testText"></div>
-<canvas id="testSetScoreBoard" width="600" height="320"></canvas>
+<h4>Testing set</h4>
+<div id="testingText"></div>
+<canvas id="testingSetScoreBoard" width="600" height="320"></canvas>
 <h2>Contact/Questions:</h2>
  &lt;my_github_account_username&gt;$@gmail.com$.
 </br>

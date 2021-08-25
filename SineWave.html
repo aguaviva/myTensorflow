@@ -96,7 +96,7 @@ function processEpoch(inputs, labels, results, size, miniBatchSize, training)
 
 var iterations = 0;
 var lastTrainingError = 1e6;
-var lastValidationError = 1e6;
+var lastTestingError = 1e6;
 function mainLoop()
 {
     iterations++;
@@ -118,16 +118,16 @@ function mainLoop()
 		}
     }
         
-    // Validation    
+    // Test    
     {   
-        var len = DataSet.validation.inputs[0][0][0].length;
+        var len = DataSet.test.inputs[0][0][0].length;
         
-        var res = processEpoch(DataSet.validation.inputs, DataSet.validation.labels, DataSet.validation.results, len, 1, false);    
+        var res = processEpoch(DataSet.test.inputs, DataSet.test.labels, DataSet.test.results, len, 1, false);    
 
-		// Update validation loss graph
+		// Update testing loss graph
 		//
-		trainingErrorPlot.AddSegment(iterations-1, lastValidationError, iterations, res.totalErr, "#0000ff")
-		lastValidationError = res.totalErr
+		trainingErrorPlot.AddSegment(iterations-1, lastTestingError, iterations, res.totalErr, "#0000ff")
+		lastTestingError = res.totalErr
 
 		// Draw learnt function
 		//
@@ -141,7 +141,7 @@ function mainLoop()
 
 			for(var i=0;i<len;i++)
 			{
-				learntFunction.drawPoint(DataSet.validation.inputs[0][0][0][i], DataSet.validation.results[i]);					
+				learntFunction.drawPoint(DataSet.test.inputs[0][0][0][i], DataSet.test.results[i]);					
 			}
 			learntFunction.DrawXMax();
 			learntFunction.DrawYMax();
@@ -188,7 +188,7 @@ function init()
 	{
 		DataSet = {}
 		DataSet.training = GenerateSinData(3000);
-		DataSet.validation = GenerateSinData(1000);
+		DataSet.test = GenerateSinData(1000);
 	}
 
 	// Init plot charts/scoreboards
@@ -222,10 +222,10 @@ function init()
 <p>This online demo trains in your browser a NN to learn a sine wave function.</p>
 <p>It uses a simple feed forward deep neural network with 2 fully connected layers with Sigmoid activations and a final fully connected output layer.</p>
 <p>See <a href="https://colab.research.google.com/github/tensorflow/tflite-micro/blob/main/tensorflow/lite/micro/examples/hello_world/train/train_hello_world_model.ipynb">tensorflow's documentation example</a> for more details on the model</p>
-<h2>Training and Validation Loss</h2>
+<h2>Training and Test Loss</h2>
 <canvas id="trainingErrorPlot" width="600" height="100"></canvas>
 <div id="trainingText"></div>
-<div id="validationText"></div>
+<div id="testingText"></div>
 <h2>Function learnt Plot:</h2>
 <canvas id="learntFunction" width="600" height="160"></canvas>
 </br>

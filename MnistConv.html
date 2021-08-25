@@ -45,7 +45,6 @@ var mnist = null;
 var networkTape = []
 
 var results_training = null;
-var results_validation = null;
 
 var trainingSetScoreBoard = null;
 var trainingErrorPlot = null;
@@ -208,13 +207,17 @@ function init()
 <p>It uses the following architecture:
 <ul>
   <li>CNN, 5x5 kernel, 32 filters </li>
+  <li>Sigmoid</li>
   <li>Max pool layer</li>
   <li>CNN, 5x5 kernel, 64 filters</li>
+  <li>Sigmoid</li>
   <li>Max pool layer</li>
   <li>Fully connected layer</li>
+  <li>Sigmoid</li>
+  <li>Softmax</li>
 </ul>  
 </p>
-<h2>Training and Validation Loss</h2>
+<h2>Training Loss</h2>
 <canvas id="trainingErrorPlot" width="600" height="100"></canvas>
 <div id="perfText"></div>
 <h2>Predictions</h2>
@@ -228,3 +231,4 @@ function init()
 </div>
 </body>
 </html>
+
