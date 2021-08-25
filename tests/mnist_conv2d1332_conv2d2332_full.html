@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<!DOCTYPE html>
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Neural network back prop, with matrix fomulation</title>
+<style type="text/css">
+<!--
+body { background-color:#ededed; font:norm2al 12px/18px Arial, Helvetica, sans-serif; }
+h1 { display:block; margin:20px auto; paddVing-bottom:20px; font:norm2al 24px/30px Georgia, "Times New Roman", Times, serif; color:#333; text-shadow: 1px 2px 3px #ccc; border-bottom:1px solid #cbcbcb; }
+
+#myCanvas { background:#fff; border:1px solid #cbcbcb; }
+#nav { display:block; width:100%; text-align:center; }
+#nav li { display:block; font-weight:bold; line-height:21px; text-shadow:1px 1px 1px #fff; width:100px; height:21px; paddVing:5px; margin:0 10px; background:#e0e0e0; border:1px solid #ccc; -moz-border-radius:4px;-webkit-border-radius:4px; border-radius:4px; float:left; }
+#nav li a { color:#000; display:block; text-decoration:none; width:100%; height:100%; }
+-->
+</style>
+<script type="text/javascript" src="../src/ActivationSigmoidLayer.js"></script>
+<script type="text/javascript" src="../src/ActivationReluLayer.js"></script>
+<script type="text/javascript" src="../src/SoftMaxLayer.js"></script>
+<script type="text/javascript" src="../src/AveragePool1DLayer.js"></script>
+<script type="text/javascript" src="../src/AveragePool2DLayer.js"></script>
+<script type="text/javascript" src="../src/ConvHelpers.js"></script>
+<script type="text/javascript" src="../src/Conv1DLayer.js"></script>
+<script type="text/javascript" src="../src/Conv2DLayer.js"></script>
+<script type="text/javascript" src="../src/Conv3DLayer.js"></script>
+<script type="text/javascript" src="../src/CostQuadraticLayer.js"></script>
+<script type="text/javascript" src="../src/CostCrossEntropyLayer.js"></script>
+<script type="text/javascript" src="../src/CostSoftMaxCrossEntropyLayer.js"></script>
+<script type="text/javascript" src="../src/FlattenLayer.js"></script>
+<script type="text/javascript" src="../src/FullyConnectedLayer.js"></script>
+<script type="text/javascript" src="../src/InputLayer.js"></script>
+<script type="text/javascript" src="../src/MaxPool1DLayer.js"></script>
+<script type="text/javascript" src="../src/MaxPool2DLayer.js"></script>
+<script type="text/javascript" src="../src/Network.js"></script>
+<script type="text/javascript" src="../src/Matrix.js"></script>
+<script type="text/javascript" src="../src/RegDropoutLayer.js"></script>
+</head>
+<script>
+
+//---------------------------------------------------------------------
+function init()
+{
+    var input = 
+    [
+        [
+            [
+            [0.00000000,0.00000000,0.00000000,0.00000000,0.00000000,0.00000000,0.00000000,0.00000000,0.00000000,0.00000000,0.00000000,0.00000000,0.00000000,0.00000000],
+            [0.00000000,0.00000000,0.00000000,0.00000000,0.00000000,0.00000000,0.00000000,0.00000000,0.00000000,0.00000000,0.00000000,0.00000000,0.00000000,0.00000000],
+            [0.00000000,0.00000000,0.00000000,0.00000000,0.00000000,0.00000000,0.02058824,0.03529412,0.25686276,0.19705883,0.41274512,0.36666667,0.00000000,0.00000000],
+            [0.00000000,0.00000000,0.00000000,0.04803922,0.54607844,0.73921573,0.91078430,0.99215686,0.99019611,0.56078434,0.62058824,0.29215688,0.00000000,0.00000000],
+            [0.00000000,0.00000000,0.00000000,0.01764706,0.69411767,0.84901959,0.94509804,0.38333336,0.67156863,0.00000000,0.00000000,0.00000000,0.00000000,0.00000000],
+            [0.00000000,0.00000000,0.00000000,0.00000000,0.01372549,0.28823531,0.77058822,0.00196078,0.00000000,0.00000000,0.00000000,0.00000000,0.00000000,0.00000000],
+            [0.00000000,0.00000000,0.00000000,0.00000000,0.00000000,0.01078431,0.70490193,0.44607848,0.10686275,0.00000000,0.00000000,0.00000000,0.00000000,0.00000000],
+            [0.00000000,0.00000000,0.00000000,0.00000000,0.00000000,0.00000000,0.07941177,0.70980394,0.86078429,0.19803922,0.00000000,0.00000000,0.00000000,0.00000000],
+            [0.00000000,0.00000000,0.00000000,0.00000000,0.00000000,0.00000000,0.00000000,0.01568628,0.58235300,0.92352939,0.06274510,0.00000000,0.00000000,0.00000000],
+            [0.00000000,0.00000000,0.00000000,0.00000000,0.00000000,0.00000000,0.18333334,0.64509809,0.92352939,0.87450981,0.00196078,0.00000000,0.00000000,0.00000000],
+            [0.00000000,0.00000000,0.00000000,0.00000000,0.08725491,0.59215689,0.96078432,0.93823528,0.52647060,0.07647059,0.00000000,0.00000000,0.00000000,0.00000000],
+            [0.00000000,0.00000000,0.22254902,0.65490198,0.95882356,0.98333335,0.58039218,0.08725490,0.00000000,0.00000000,0.00000000,0.00000000,0.00000000,0.00000000],
+            [0.00000000,0.00000000,0.38137257,0.49607843,0.34019607,0.14509805,0.00000000,0.00000000,0.00000000,0.00000000,0.00000000,0.00000000,0.00000000,0.00000000],
+            [0.00000000,0.00000000,0.00000000,0.00000000,0.00000000,0.00000000,0.00000000,0.00000000,0.00000000,0.00000000,0.00000000,0.00000000,0.00000000,0.00000000]
+            ]
+        ]
+    ]
+
+    //------------------------ layer 0 Conv2D
+    var weights0 = 
+    [
+        [
+            [
+            [-0.31571767,0.12348363,-0.19616178],
+            [0.44857487,0.15094551,0.12881741],
+            [0.36706850,0.03014633,-0.05574355]
+            ]
+        ],
+        [
+            [
+            [0.37852016,-0.06171051,0.13435224],
+            [-0.06118879,0.09889671,0.10790333],
+            [0.12045488,-0.44691202,-0.23318423]
+            ]
+        ]
+    ]
+
+    var bias0 = [0.00000000,0.00000000]
+    //------------------------ layer 1 Conv2D
+    var weights1 = 
+    [
+        [
+            [
+            [0.00825235,0.15404350,-0.03541613],
+            [0.03993914,0.10688865,-0.16825201],
+            [0.15181339,0.38873166,-0.28073746]
+            ],
+            [
+            [-0.07468241,-0.05220109,-0.25474921],
+            [-0.17971522,0.02634266,-0.31864905],
+            [0.24061513,0.29469109,0.24867433]
+            ]
+        ],
+        [
+            [
+            [-0.04610613,-0.12586325,0.20632702],
+            [0.04043868,0.30522114,0.34985560],
+            [-0.17840734,0.27216566,0.36156636]
+            ],
+            [
+            [0.40211833,0.08251595,0.03980988],
+            [-0.31928572,0.04988727,0.37848043],
+            [-0.32822323,0.13522238,0.39295149]
+            ]
+        ]
+    ]
+    var bias1 = [0.00000000,0.00000000]
+
+    //------------------------ layer 2 Fullconnected
+    var weights2 = [[TransposeMat([
+      [0.16212499,0.06608930,0.00725135,-0.05362807,0.03983378,-0.22231218,-0.15872298,0.10078812,-0.00398402,-0.07580343,0.00389498,-0.13703814,0.17161700,0.21865374,0.01299468,-0.05802970,-0.10840939,-0.22955415,-0.03352688,-0.19981425,0.22902507,0.12652019,0.08505750,0.01670161,-0.08688568,-0.05018723,-0.14914349,0.16040716,-0.17090493,0.05045101,0.07710415,0.21407005,0.23113263,-0.00658688,-0.04895318,0.09522969,0.08694324,-0.04748404,-0.23818272,-0.00928842,0.18852288,-0.00910476,0.00552931,0.04322904,0.23257095,0.08946294,0.17486387,-0.24295202,-0.03361955,-0.21653892,-0.05814962,0.11105347,-0.00910188,0.02194837,-0.22841489,-0.18862183,0.15678763,0.17829564,0.23587996,-0.04311816,0.06532684,0.09466758,0.00439897,-0.08308496,-0.03740132,-0.10072961,-0.02555826,0.20309773,-0.08833590,-0.20673592,0.23760337,-0.21725546,0.10742742,-0.06609663,-0.20050444,-0.00069506,-0.13347346,0.03864664,0.21868739,-0.04420871,0.14262041,-0.18335000,0.14872971,0.11142853,-0.19143859,0.20710313,0.13576788,-0.01935741,-0.21608539,-0.06719604,0.08535749,-0.00176483,-0.14890397,0.11611846,0.10475981,0.05580312,-0.11418611,-0.14013323]
+    ])]]
+    
+    var bias2 = [0.00000000]
+
+    //------------------------ 
+
+    var output = 
+    [
+        [
+            [
+                [0]
+            ]
+        ]
+    ]
+
+    var network = []
+    network.push(new InputLayer());    
+    network.push(new Conv2DLayer(weights0, bias0));  
+    network.push(new ActivationReluLayer());
+    network.push(new MaxPool2DLayer()); 
+    network.push(new Conv2DLayer(weights1, bias1));  
+    network.push(new ActivationReluLayer());
+    network.push(new FlattenLayer());  
+    network.push(new FullyConnectedLayer(weights2, bias2));
+    network.push(new CostQuadraticLayer());  
+
+    for(var i=0;i<10;i++)
+    {
+        network[network.length-1].setValue(output);
+        var nets = ForwardPropagation(network, input);    
+        //DumpWeights(network, input);
+        BackwardPropagation(network);
+        ApplyGradients(network, 0.1);
+        Print(nets[0][0] + "<br>")
+    }
+}
+</script>
+
+<body onload="init()">
+<h1>Conv Nets test suite</h1>
+
+Test suite results, trains the NN 10 times and compares the result with tensorflow results
+
+<div id="container">
+<div id="text" ></div>
+</br>
+</br>
+<h2>Contact/Questions:</h2>
+ &lt;my_github_account_username&gt;$@gmail.com$.
+</br>
+</br>
+</div>
+</body>
+</html>
