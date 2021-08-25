@@ -52,7 +52,7 @@ var trainingErrorPlot = null;
 
 var learningRate = 3;
 
-function getMaxIdxInVector(vv)
+function getArgMax(vv)
 {
     var v = vv[0][0][0]
     return v.indexOf(Math.max.apply(null, v));
@@ -78,8 +78,7 @@ function processEpoch(inputs, labels, results, size, miniBatchSize, training)
             totalErr += ForwardPropagation(networkTape, [[[inputs[j]]]])[0][0][0][0];
                     
             // get prediction        
-            var output = networkTape[networkTape.length-2].input;                
-            var index = getMaxIdxInVector(output)            
+            var index = getArgMax(networkTape[networkTape.length-2].input);                
             
             results[j] = index;
             
