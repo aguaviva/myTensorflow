@@ -39,8 +39,7 @@ h1 { display:block; width:600px; margin:20px auto; paddVing-bottom:20px; font:no
 </head>
 <script>
 
-var trainingData;
-var validationData;
+var DataSet;
 
 var network = []
 var outputs = [];
@@ -48,19 +47,20 @@ var outputs = [];
 var learntFunction = null;
 var trainingErrorPlot = null;
 
-var iterations = 0;
 var learningRate = 0.01;
 
-function iterate2(inputs, labels, results, offset, size, batchSize, training)
+function iterate2(inputs, labels, results, offset, size, miniBatchSize, training)
 {   
-    assert((size % batchSize) == 0);
+    assert((size % miniBatchSize) == 0);
     
     var totalErr = 0;
     var correct = 0;
 
-    for(var i=offset;i<(offset+size);i+=batchSize)
+    for(var i=offset;i<(offset+size);i+=miniBatchSize)
     {    
-        for(var j=i;j<(i+batchSize);j++)
+        // process miniBatchSize
+		//
+		for(var j=i;j<(i+miniBatchSize);j++)
         {
 			label = labels[0][0][0]
 		
@@ -84,73 +84,79 @@ function iterate2(inputs, labels, results, offset, size, batchSize, training)
         
         if (training)
         {
-            ApplyDeltas(network, learningRate/batchSize);    
+            ApplyGradients(network, learningRate/miniBatchSize);    
         }        
     }    
     
     return {correct: correct, totalErr: totalErr / size};
 }
 
+var iterations = 0;
 var lastTrainingError = 0;
 var lastValidationError = 0;
-function iterate()
+function mainLoop()
 {
     iterations++;
 
     // train
     { 
         var offset = 0;
-        var len = trainingData.inputs[0][0][0].length;
-        var batch = 1;
+        var len = DataSet.training.inputs[0][0][0].length;
+        var miniBatchSize = 1;
         
         var t0 = performance.now();
         
-        var res = iterate2(trainingData.inputs, trainingData.labels, trainingData.results, offset, len, batch, true);
+        var res = iterate2(DataSet.training.inputs, DataSet.training.labels, DataSet.training.results, offset, len, miniBatchSize, true);
 
         var t1 = performance.now();
         var milliseconds = (t1 - t0);
         
-		if (iterations>1)
+		// Draw training error graph
+		//
 		{
-			trainingErrorPlot.AddSegment(iterations-1,lastTrainingError,iterations,res.totalErr, "#ff0000")
+			if (iterations>1)
+			{
+				trainingErrorPlot.AddSegment(iterations-1,lastTrainingError,iterations, res.totalErr, "#ff0000")
+			}
+			lastTrainingError = res.totalErr
+			
+			document.getElementById("trainingText").innerHTML = "Num items: " + len + "<br>Epoc:" + iterations + " Epocs/sec: " + (1000.0 / milliseconds).toFixed(2) + "<br>"
 		}
-		lastTrainingError = res.totalErr
-		
-        document.getElementById("trainingText").innerHTML = "Num items: " + len + "<br>Epoc:" + iterations + " Epocs/sec: " + (1000.0 / milliseconds).toFixed(2) + "<br>"
-        //document.getElementById("trainingText").innerHTML += "Training: Num items: " + len + " Error: " + res.totalErr + " <br> ";
     }
         
-    // test    
+    // Validation    
     {   
         var offset = 0; 
-        var len = validationData.inputs[0][0][0].length;
+        var len = DataSet.validation.inputs[0][0][0].length;
         
-        var res = iterate2(validationData.inputs, validationData.labels, validationData.results, offset, len, batch, false);    
+        var res = iterate2(DataSet.validation.inputs, DataSet.validation.labels, DataSet.validation.results, offset, len, miniBatchSize, false);    
 
+		// Draw validation error graph
+		//
 		if (iterations>1)
 		{
-			trainingErrorPlot.AddSegment(iterations-1,lastValidationError,iterations,res.totalErr, "#0000ff")
+			trainingErrorPlot.AddSegment(iterations-1, lastValidationError, iterations, res.totalErr, "#0000ff")
 		}
 		lastValidationError = res.totalErr
 
-        learntFunction.Clear();		
-        learntFunction.DrawAxis();
-
-
-		learntFunction.drawFunction(x,y, function(i)
+		// Draw learnt function
+		//
 		{
-			return [(i*6.28/len), myFunction(i*6.248/len)];
-		},len);
+			learntFunction.Clear();		
+			learntFunction.DrawAxis();
+			learntFunction.drawFunction(x,y, function(i)
+			{
+				return [(i*6.28/len), myFunction(i*6.248/len)];
+			},len);
 
-		for(var i=0;i<len;i++)
-		{
-			learntFunction.drawPoint(validationData.inputs[0][0][0][i], validationData.results[i]);					
+			for(var i=0;i<len;i++)
+			{
+				learntFunction.drawPoint(DataSet.validation.inputs[0][0][0][i], DataSet.validation.results[i]);					
+			}
+			learntFunction.DrawXMax();
+			learntFunction.DrawYMax();
+			learntFunction.DrawYMin();						
 		}
-		learntFunction.DrawXMax();
-		learntFunction.DrawYMax();
-		learntFunction.DrawYMin();
-						
-        //document.getElementById("validationText").innerHTML = "Num items: " + len + " Error: " + res.totalErr + " <br> ";        
     }
 }
 
@@ -161,7 +167,7 @@ function myFunction(x)
 
 function GenerateSinData(length)
 {
-	data = [];
+	data = {};
 	data.inputs = [];
 	data.inputs[0] = [];
 	data.inputs[0][0] = [];
@@ -188,8 +194,9 @@ function GenerateSinData(length)
 
 function init()
 {   
-	trainingData = GenerateSinData(3000);
-	validationData = GenerateSinData(1000);
+	DataSet = {}
+	DataSet.training = GenerateSinData(3000);
+	DataSet.validation = GenerateSinData(1000);
    
 	{    
 		trainingErrorPlot = new Graph("trainingErrorPlot",-15,0.5, 500,-0.07);
@@ -217,7 +224,7 @@ function init()
 		network.push(new FullyConnectedLayer(weights3, bias3));
 		network.push(new CostQuadraticLayer());
 	
-		setInterval(iterate,10); 
+		setInterval(mainLoop, 10); 
 	}
 }
 </script>

@@ -22,8 +22,6 @@ function ForwardPropagation(network, input)
     return res;
 }
 
-
-
 function BackwardPropagation(network)
 {
     var layerDerivative = network[network.length-1].backPropagation()
@@ -36,7 +34,7 @@ function BackwardPropagation(network)
     }
 }
 
-function ApplyDeltas(network, LearningRate)
+function ApplyGradients(network, LearningRate)
 {
     for(var i=1;i<network.length-1;i++)
     {

@@ -54,29 +54,23 @@ var trainingErrorPlot = null;
 var iterations = 0;
 var learningRate = 3;
 
-function vectorFromIdx(i)
-{
-    var v = Array(10).fill(0);
-    v[i] = 1;
-    return [[[v]]];
-}
-
 function getMaxIdxInVector(vv)
 {
     var v = vv[0][0][0]
     return v.indexOf(Math.max.apply(null, v));
 }
 
-function iterate2(inputs, labels, results, offset, size, batchSize, training)
+function iterate2(inputs, labels, results, offset, size, miniBatchSize, training)
 {   
-    assert((size % batchSize) == 0);
+    assert((size % miniBatchSize) == 0);
     
     var totalErr = 0;
     var correct = 0;
 
-    for(var i=offset;i<(offset+size);i+=batchSize)
+    for(var i=offset;i<(offset+size);i+=miniBatchSize)
     {    
-        for(var j=i;j<(i+batchSize);j++)
+		// process minibatch
+        for(var j=i;j<(i+miniBatchSize);j++)
         {
             network[network.length-1].setValue(labels[j]);
             
@@ -99,7 +93,7 @@ function iterate2(inputs, labels, results, offset, size, batchSize, training)
         
         if (training)
         {
-            ApplyDeltas(network, learningRate/batchSize);    
+            ApplyGradients(network, learningRate/miniBatchSize);    
         }        
     }    
     
@@ -108,7 +102,7 @@ function iterate2(inputs, labels, results, offset, size, batchSize, training)
 
 var lastTrainingError = 0;
 var lastValidationError = 0;
-function iterate()
+function mainLoop()
 {
     iterations++;
 
@@ -117,6 +111,10 @@ function iterate()
         var offset = 0;
         var len = mnist.training_images.length;
         var batch = 100;
+
+        // Draw Training score board
+        //
+        trainingSetScoreBoard.Draw(mnist.training_images, mnist.training_labels, results_validation, offset);		       
         
         var t0 = performance.now();
         
@@ -125,28 +123,34 @@ function iterate()
         var t1 = performance.now();
         var milliseconds = (t1 - t0);
         
-		if (iterations>1)
-		{
-			trainingErrorPlot.AddSegment(iterations-1,lastTrainingError,iterations,res.totalErr, "#ff0000")
-		}
-		lastTrainingError = res.totalErr
+		// Draw training error graph
+		//
+        {
+            if (iterations>1)
+            {
+                trainingErrorPlot.AddSegment(iterations-1,lastTrainingError,iterations,res.totalErr, "#ff0000")
+            }
+            lastTrainingError = res.totalErr
 
-        document.getElementById("perfText").innerHTML = "Epocs:" + iterations + " Epocs/sec: " + (1000.0 / milliseconds).toFixed(2) + "<br>"
-        document.getElementById("trainingText").innerHTML = "Num items: " + len + " Correct: " + res.correct + " ("+ (res.correct*100/len).toFixed(2) +"% ) Error: " + res.totalErr + " <br> ";
-		
-        trainingSetScoreBoard.Draw(mnist.training_images, mnist.training_labels, results_validation, offset);		
+            document.getElementById("perfText").innerHTML = "Epocs:" + iterations + " Epocs/sec: " + (1000.0 / milliseconds).toFixed(2) + "<br>"
+            document.getElementById("trainingText").innerHTML = "Num items: " + len + " Correct: " + res.correct + " ("+ (res.correct*100/len).toFixed(2) +"% ) Error: " + res.totalErr + " <br> ";
+        }
     }
         
-    // test    
+    // Validation
     {   
         var offset = 0; 
         var len = 400;
         
+        // Draw Validation score board
+        //
         testSetScoreBoard.Draw(mnist.validation_images, mnist.validation_labels, results_training, offset);
         
         var res = iterate2(mnist.validation_images, mnist.validation_labels, results_training, offset, len, batch, false);    
 
-		if (iterations>1)
+		// Draw validation error graph
+		//
+        if (iterations>1)
 		{
 			trainingErrorPlot.AddSegment(iterations-1,lastValidationError,iterations,res.totalErr, "#0000ff")
 		}
@@ -160,7 +164,7 @@ function init()
 {   
     GetMnistInputs().then(function(data)
 	{    
-		mnist=[]
+		mnist={}
 		// choose validation set
 		mnist.validation_images = data.inputs.slice(3000,6000)
 		mnist.validation_labels = data.labels.slice(3000,6000)	
@@ -170,11 +174,10 @@ function init()
 		mnist.training_images = data.inputs.slice(0,3000)
 		mnist.training_labels = data.labels.slice(0,3000)	
 		results_training = Array(mnist.training_labels.length).fill(-1);
-
 	
-		trainingSetScoreBoard = new ScoreBoard("trainingSetScoreBoard");
+		trainingSetScoreBoard = new ScoreBoard("trainingSetScoreBoard");		
+		testSetScoreBoard     = new ScoreBoard("testSetScoreBoard");
 		
-		testSetScoreBoard = new ScoreBoard("testSetScoreBoard");
 		trainingErrorPlot = new Graph("trainingErrorPlot",-15,2, 500,-0.25);
 		trainingErrorPlot.DrawXMax();
 		trainingErrorPlot.DrawYMin();
@@ -194,7 +197,7 @@ function init()
 		
 		network.push(new CostSoftMaxCrossEntropyLayer());
 		
-		setInterval(iterate,10); 
+		setInterval(mainLoop, 10); 
 	});
 }
 </script>
