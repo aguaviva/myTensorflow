@@ -2,7 +2,7 @@ class CostSoftMaxCrossEntropyLayer
 {
     constructor()
     {
-        this.name ="CostSoftMaxCrossEntropyLayer";
+        this.name ="SoftMaxCrossEntropy";
     }
 
     setValue(idx)
