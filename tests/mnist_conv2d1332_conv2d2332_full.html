@@ -143,11 +143,11 @@ function init()
     network.push(new FullyConnectedLayer(weights2, bias2));
     network.push(new CostQuadraticLayer());  
 
-    Print("<h2>Model summary</h2>")
+    var out = "<table cellspacing='2' cellpadding='2' border='1'>"
+    out += "<tr><th>Summary</th><th>Training loss</th></tr>";
+	out += "<tr>"
+    out += "<td>"+ networkSummary(network)+ "</td>";
 
-    Print(networkSummary(network))
-
-    Print("<h2>Training loss</h2>")
     iteration_loss = "<pre>"
     for(var i=0;i<10;i++)
     {
@@ -156,10 +156,13 @@ function init()
         //DumpWeights(network, input);
         BackwardPropagation(network);
         ApplyGradients(network, 0.1);
-        iteration_loss += " " + ((i+1)+ "").padStart(2, ' ')  + ")   " + nets[0][0] + "\n"
+        iteration_loss += " " + ((i+1)+ "").padStart(2, ' ')  + ")   " + nets[0][0] + "   \n"
     }
 	iteration_loss += "</pre>"
-    Print(iteration_loss)
+
+	out += "<td>"+iteration_loss+"</td>";
+	out += "</tr>"
+    Print(out)
 }
 </script>
 
