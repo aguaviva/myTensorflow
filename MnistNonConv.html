@@ -198,6 +198,8 @@ function init()
 		networkTape.push(new ActivationSigmoidLayer());		
 		networkTape.push(new CostSoftMaxCrossEntropyLayer());
 		
+		document.getElementById("networkSummary").innerHTML =  networkSummary(networkTape);
+		
 		setInterval(mainLoop, 10); 
 	});
 }
@@ -219,9 +221,8 @@ function init()
 <h4>Testing set</h4>
 <div id="testingText"></div>
 <canvas id="testingSetScoreBoard" width="600" height="320"></canvas>
-<h2>Contact/Questions:</h2>
- &lt;my_github_account_username&gt;$@gmail.com$.
-</br>
+<h2>Network Summary</h2>
+<div id="networkSummary"></div>
 </div>
 </body>
 </html>

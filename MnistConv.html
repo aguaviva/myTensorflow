@@ -191,7 +191,9 @@ function init()
 		networkTape.push(new ActivationSigmoidLayer());
 		networkTape.push(new FullyConnectedLayer(TensorRandom(1,1, 1024, 10), RandomVec(10)));
 		networkTape.push(new CostSoftMaxCrossEntropyLayer());
-		   
+		
+		document.getElementById("networkSummary").innerHTML =  networkSummary(networkTape);   
+		
 		setInterval(mainLoop, 10); 		
 	});	
 }
@@ -203,19 +205,7 @@ function init()
 <div id="container">
 <h2>Intro</h2>
 <p>Warning! This online demo is very slow. It trains CNNs in your browser to recognize digits from the MNIST set.</p>
-<p>It uses the following architecture:
-<ul>
-  <li>CNN, 5x5 kernel, 32 filters </li>
-  <li>Sigmoid</li>
-  <li>Max pool layer</li>
-  <li>CNN, 5x5 kernel, 64 filters</li>
-  <li>Sigmoid</li>
-  <li>Max pool layer</li>
-  <li>Fully connected layer</li>
-  <li>Sigmoid</li>
-  <li>Softmax</li>
-</ul>  
-</p>
+
 <h2>Training Loss</h2>
 <canvas id="trainingErrorPlot" width="600" height="100"></canvas>
 <div id="perfText"></div>
@@ -223,10 +213,8 @@ function init()
 <p>Just showing the training set, just 10 images so it is not that slow!</p>
 <div id="trainingText"></div>
 <canvas id="trainingSetScoreBoard" width="600" height="32"></canvas>
-<h2>Contact/Questions:</h2>
- &lt;my_github_account_username&gt;$@gmail.com$.
-</br>
-</br>
+<h2>Network Summary</h2>
+<div id="networkSummary"></div>
 </div>
 </body>
 </html>

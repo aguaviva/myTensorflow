@@ -210,6 +210,8 @@ function init()
 	networkTape.push(new FullyConnectedLayer([[RandomMat(16, 1)]], RandomVec(1)));
 	networkTape.push(new CostQuadraticLayer());
 
+	document.getElementById("networkSummary").innerHTML =  networkSummary(networkTape);
+
 	setInterval(mainLoop, 10); 
 }
 </script>
@@ -229,10 +231,8 @@ function init()
 <h2>Function learnt Plot:</h2>
 <canvas id="learntFunction" width="600" height="160"></canvas>
 </br>
-<h2>Contact/Questions:</h2>
- &lt;my_github_account_username&gt;$@gmail.com$.
-</br>
-</br>
+<h2>Network Summary</h2>
+<div id="networkSummary"></div>
 </div>
 </body>
 </html>
