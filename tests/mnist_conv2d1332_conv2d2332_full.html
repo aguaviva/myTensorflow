@@ -148,7 +148,7 @@ function init()
     Print(networkSummary(network))
 
     Print("<h2>Training loss</h2>")
-    iteration_loss = "<ol>"
+    iteration_loss = "<pre>"
     for(var i=0;i<10;i++)
     {
         network[network.length-1].setValue(output);
@@ -156,9 +156,9 @@ function init()
         //DumpWeights(network, input);
         BackwardPropagation(network);
         ApplyGradients(network, 0.1);
-        iteration_loss += "<li>" + "&nbsp;&nbsp;&nbsp;" + nets[0][0] + "</li>"
+        iteration_loss += " " + ((i+1)+ "").padStart(2, ' ')  + ")   " + nets[0][0] + "\n"
     }
-    iteration_loss += "</ol>"
+	iteration_loss += "</pre>"
     Print(iteration_loss)
 }
 </script>

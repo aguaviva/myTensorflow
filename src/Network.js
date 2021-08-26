@@ -43,19 +43,31 @@ function ApplyGradients(network, LearningRate)
     }
 }
 
+function rightPad(str, pad)
+{	
+	var myString = str;
+	for (var i = 0; i <= (pad - str.length); ++i) 
+		myString += ' ';
+	return myString;
+}
+
 function networkSummary(network)
 {
-    model_summary = "<table  cellpadding='1' cellspacing='1' border='1'>"
-	model_summary += "<tr><th>Layer (type)</th><th>info</th><th>Param #</th></tr>"
+	model_summary = "<pre>"
+	model_summary += rightPad("Layer (type)",20);
+    model_summary += rightPad("info",20);
+    model_summary += rightPad("Param #",20) + "\n";
+	model_summary += "=================================================================\n"
+	
     for(var i=0;i<network.length;i++)
     {
-	   model_summary += "<tr>"
-	   model_summary += "<td>" + network[i].name + "</td>";           
-       model_summary += "<td style='text-align:center'>" + ((network[i].info==undefined)?"--":network[i].info) + "</td>";           
-	   model_summary += "<td style='text-align:center'>" + ((network[i].paramCount==undefined)?"0":network[i].paramCount) + "</td>";           	   
-	   model_summary += "</tr>"
+	   model_summary += rightPad(network[i].name,20);           
+       model_summary += rightPad(((network[i].info==undefined)?"--":network[i].info),20);           
+	   model_summary += rightPad(((network[i].paramCount==undefined)?"0":network[i].paramCount),20);           
+       model_summary += "\n"
+	   model_summary += "_________________________________________________________________\n"
     }
-    model_summary += "</table>"
+	model_summary += "</pre>"
     return model_summary;
 }
 
