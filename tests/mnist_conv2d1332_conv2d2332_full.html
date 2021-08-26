@@ -144,13 +144,8 @@ function init()
     network.push(new CostQuadraticLayer());  
 
     Print("<h2>Model summary</h2>")
-    model_summary = "<ol>"
-    for(var i=0;i<network.length;i++)
-    {
-        model_summary += "<li>" + "&nbsp;&nbsp;&nbsp;" + network[i].name + "</li>"
-    }
-    model_summary += "</ol>"
-    Print(model_summary)
+
+    Print(networkSummary(network))
 
     Print("<h2>Training loss</h2>")
     iteration_loss = "<ol>"
@@ -171,14 +166,10 @@ function init()
 <body onload="init()">
     <h1>mnist_conv2d1332_conv2d2332_full</h1>
 
-    <p>Test suite results, trains the NN 10 times, outputs to be compared with its corresponding jupyter notebook</p>
-
     <div id="container">
+	    <p>Test suite results, trains the NN 10 times, outputs to be compared with its corresponding jupyter notebook</p>
+
         <div id="text" ></div>
-        <h2>Contact/Questions:</h2>
-        &lt;my_github_account_username&gt;$@gmail.com$.
-        </br>
-        </br>
     </div>
 </body>
 </html>

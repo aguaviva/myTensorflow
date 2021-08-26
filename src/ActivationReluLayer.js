@@ -2,7 +2,7 @@ class ActivationReluLayer
 {
     constructor()
     {
-        this.name ="ActivationReluLayer";
+        this.name ="Relu";
     }
 
     forwardPass(input)

@@ -2,9 +2,10 @@ class FullyConnectedLayer
 {
     constructor(weights, bias)
     {
-        this.name ="FullyConnectedLayer";
-        this.weights = weights
         this.bias = bias
+        this.weights = weights
+        this.name ="FullyConnectedLayer";
+        this.info = this.weights[0][0].length + " : " + this.weights[0][0][0].length
     }
 
     forwardPass(input)

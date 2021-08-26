@@ -7,7 +7,7 @@ class ActivationSigmoidLayer
     constructor(act)
     {
         this.weights = undefined;
-        this.name ="ActivationSigmoidLayer";
+        this.name ="Sigmoid";
     }
 
     forwardPass(input)

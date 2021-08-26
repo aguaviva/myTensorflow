@@ -43,6 +43,22 @@ function ApplyGradients(network, LearningRate)
     }
 }
 
+function networkSummary(network)
+{
+    model_summary = "<table>"
+	model_summary += "<tr><th>name</th><th>info</th></tr>"
+    for(var i=0;i<network.length;i++)
+    {
+	   model_summary += "<tr>"
+	   info = 
+	   model_summary += "<td>" + network[i].name + "</td>";           
+       model_summary += "<td>" + ((network[i].info==undefined)?"--":network[i].info) + "</td>";           
+	   model_summary += "</tr>"
+    }
+    model_summary += "</table>"
+    return model_summary;
+}
+
 //--------------------------------------------------------------------
 
 function Print(str)
