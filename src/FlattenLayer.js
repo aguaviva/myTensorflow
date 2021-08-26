@@ -3,7 +3,7 @@ class FlattenLayer
     constructor(dimIni)
     {    
         this.dimIni = dimIni;
-        this.name ="FlattenLayer";
+        this.name ="Flatten";
     }
 
     forwardPass(input)

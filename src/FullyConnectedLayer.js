@@ -4,8 +4,9 @@ class FullyConnectedLayer
     {
         this.bias = bias
         this.weights = weights
-        this.name ="FullyConnectedLayer";
-        this.info = this.weights[0][0].length + " : " + this.weights[0][0][0].length
+        this.name ="Dense";
+        this.info = this.weights[0][0].length + " : " + this.weights[0][0][0].length;
+		this.paramCount =  (this.weights[0][0].length * this.weights[0][0][0].length) + this.bias.length;
     }
 
     forwardPass(input)

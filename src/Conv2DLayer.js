@@ -136,6 +136,7 @@ class Conv2DLayer
         this.bias = bias;
         this.name ="Conv2D";
 		this.info = this.weights[0][0].length + "x" + this.weights[0][0][0].length + ", " + this.weights[0].length + " : " + this.weights.length
+		this.paramCount =  (this.weights.length * this.weights[0].length * this.weights[0][0].length * this.weights[0][0][0].length) + this.bias.length;
     }
 
     forwardPass(input)
