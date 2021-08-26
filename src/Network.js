@@ -271,7 +271,7 @@ function TestResult(name, network, input, output, learningRate, expected)
     
     var error = (res[0] - expected);
     
-    return [name, error]
+    return [name, networkSummary(network), error]
 }
 
 function DebugResult(name, network, input, output, learningRate, expected)

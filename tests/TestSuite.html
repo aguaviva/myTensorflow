@@ -1104,8 +1104,8 @@ function regressionTestsGood()
         MNIST_conv_TF
     ]
 
-    var out = "<table>"
-    
+    var out = "<table cellspacing='2' cellpadding='2' border='1'>"
+    out += "<tr><th>Network name</th><th>Summary</th><th>Error</th></tr>";
     for(var i=0;i<tests.length;i++)
     {
         out += "<tr>";
@@ -1116,6 +1116,7 @@ function regressionTestsGood()
             
             out += "<td><pre>"+res[0]+"</pre></td>";
             out += "<td><pre>"+res[1]+"</pre></td>";
+			out += "<td><pre>"+res[2]+"</pre></td>";
         }
         catch(err) 
         {
