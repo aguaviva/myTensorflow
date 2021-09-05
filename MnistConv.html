@@ -132,6 +132,8 @@ function mainLoop()
         //
 		trainingSetScoreBoard.Draw(mnist.training_images, mnist.training_labels, results_training, 0);		
     }
+	
+	window.requestAnimationFrame(mainLoop);
 }
 
 function init()
@@ -175,6 +177,8 @@ function init()
 			trainingErrorPlot = new Graph("trainingErrorPlot",-20,12, 500,-2);
 			trainingErrorPlot.DrawXMax();
 			trainingErrorPlot.DrawYMin();
+			
+			trainingSetScoreBoard.Draw(mnist.training_images, mnist.training_labels, results_training, 0);	
 		}
 
 		// network definition
@@ -192,9 +196,9 @@ function init()
 		networkTape.push(new FullyConnectedLayer(TensorRandom(1,1, 1024, 10), RandomVec(10)));
 		networkTape.push(new CostSoftMaxCrossEntropyLayer());
 		
-		document.getElementById("networkSummary").innerHTML =  networkSummary(networkTape);   
+		document.getElementById("networkSummary").innerHTML =  networkSummary(networkTape);   		
 		
-		setInterval(mainLoop, 10); 		
+		setTimeout(function(){ window.requestAnimationFrame(mainLoop); }, 10)
 	});	
 }
 </script>
@@ -205,6 +209,7 @@ function init()
 <div id="container">
 <h2>Intro</h2>
 <p>Warning! This online demo is very slow. It trains CNNs in your browser to recognize digits from the MNIST set.</p>
+<p>Credits: The model was based on <a href="https://keras.io/examples/vision/mnist_convnet/">this Keras sample</a></p>
 
 <h2>Training Loss</h2>
 <canvas id="trainingErrorPlot" width="600" height="100"></canvas>
